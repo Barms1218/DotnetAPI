@@ -1,4 +1,5 @@
 using DotNetAPI.Data;
+using DotNetAPI.Dtos;
 using DotNetAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -87,7 +88,7 @@ public class UserController : ControllerBase
 
 
     [HttpPost("AddUser")]
-    public IActionResult AddUser(User user)
+    public IActionResult AddUser(UserDto user)
     {
         string sql = $@"
         INSERT INTO TutorialAppSchema.Users(
