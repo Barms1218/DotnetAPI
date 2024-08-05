@@ -1,4 +1,5 @@
 using DotNetAPI.Data;
+using DotNetAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DotNetAPI.Controllers;
@@ -30,17 +31,22 @@ public class UserController : ControllerBase
     /// <summary>
     /// 
     /// </summary>
+    /// <returns></returns>
+    [HttpGet("GetUsers")]
+    public IEnumerable<User> GetUsers()
+    {
+        //IEnumerable<User> users = _dapper.LoadData("SELECT * FROM TutorialAppSchema.Users");
+        return _dapper.LoadData<User>("SELECT * FROM TutorialAppSchema.Users");
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
     /// <param name="testValue"></param>
     /// <returns></returns>
-    [HttpGet("GetUsers/{testValue}")]
-    public string[] GetUsers(string testValue)
+    [HttpGet("GetUser/{userId}")]
+    public User GetSingleUser(int userId)
     {
-        string[] responseArray = new string[]
-        {
-            "test1",
-            "test2",
-            testValue
-        };
-        return responseArray;
+        return _dapper.LoadDataSingle<User>($@"SELECT * FROM TutorialAppSchema.Users WHERE UserId = {userId}");
     }
 }
