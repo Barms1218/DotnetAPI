@@ -31,3 +31,4 @@ C:\Users\brand\Documents\dotnet_course_practice\DotnetAPI\obj\Debug\net8.0\refin
 C:\Users\brand\Documents\dotnet_course_practice\DotnetAPI\obj\Debug\net8.0\DotnetAPI.pdb
 C:\Users\brand\Documents\dotnet_course_practice\DotnetAPI\obj\Debug\net8.0\DotnetAPI.genruntimeconfig.cache
 C:\Users\brand\Documents\dotnet_course_practice\DotnetAPI\obj\Debug\net8.0\ref\DotnetAPI.dll
+C:\Users\brand\Documents\dotnet_course_practice\DotnetAPI\obj\Debug\net8.0\DotnetAPI.sourcelink.json
