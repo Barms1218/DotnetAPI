@@ -29,9 +29,9 @@ public class UserController : ControllerBase
     }
 
     /// <summary>
-    /// 
+    /// Get all users from the database
     /// </summary>
-    /// <returns></returns>
+    /// <returns>All Users</returns>
     [HttpGet("GetUsers")]
     public IEnumerable<User> GetUsers()
     {
@@ -40,13 +40,75 @@ public class UserController : ControllerBase
     }
 
     /// <summary>
-    /// 
+    /// Get all users that are currently active
     /// </summary>
-    /// <param name="testValue"></param>
-    /// <returns></returns>
+    /// <returns>All active users</returns>
+    [HttpGet("GetActiveUsers")]
+    public IEnumerable<User> GetActiveUsers()
+    {
+        string query = @"SELECT * FROM TutorialAppSchema.Users 
+        WHERE Active = 1";
+        return _dapper.LoadData<User>(query);
+    }
+
+    /// <summary>
+    /// Get a single user from the database by their user id
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <returns>The User from the database</returns>
     [HttpGet("GetUser/{userId}")]
     public User GetSingleUser(int userId)
     {
-        return _dapper.LoadDataSingle<User>($@"SELECT * FROM TutorialAppSchema.Users WHERE UserId = {userId}");
+        string query = $@"SELECT * FROM TutorialAppSchema.Users 
+        WHERE UserId = {userId}";
+        return _dapper.LoadDataSingle<User>(query);
+    }
+
+    [HttpPut("EditUser")]
+    public IActionResult EditUser(User user)
+    {
+        string sql = $@"
+        UPDATE TutorialAppSchema.Users
+            SET [FirstName] = '{user.FirstName}',
+            [LastName] = '{user.LastName}',
+            [Email] = '{user.Email}',
+            [Gender] = '{user.Gender}',
+            [Active] = {Convert.ToInt32(user.Active)}
+                WHERE UserId = {user.UserId}";
+
+        Console.Write(sql);
+        if (_dapper.ExecuteSql(sql))
+        {
+            return Ok();
+        }
+
+        throw new Exception("Failed to update user");
+    }
+
+
+    [HttpPost("AddUser")]
+    public IActionResult AddUser(User user)
+    {
+        string sql = $@"
+        INSERT INTO TutorialAppSchema.Users(
+        [FirstName],
+        [LastName],
+        [Email],
+        [Gender],
+        [Active]
+        ) VALUES (
+            '{user.FirstName}',
+            '{user.LastName}',
+            '{user.Email}',
+            '{user.Gender}',
+            {Convert.ToInt32(user.Active)}
+        )";
+        Console.Write(sql);
+        if (_dapper.ExecuteSql(sql))
+        {
+            return Ok();
+        }
+
+        throw new Exception("Failed to add user");
     }
 }
