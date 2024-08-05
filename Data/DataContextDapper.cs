@@ -12,7 +12,7 @@ class DataContextDapper
     {
         _config = configuration;
     }
-    
+
     /// <summary>
     /// Method that abstracts a Query operation and returns all rows
     /// </summary>
@@ -37,6 +37,30 @@ class DataContextDapper
         IDbConnection dbConnection = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
 
         return dbConnection.QuerySingle<T>(sql);
+    }
+
+    /// <summary>
+    /// Returns whether or not the sql affected any change
+    /// </summary>
+    /// <param name="sql"></param>
+    /// <returns></returns>
+    public bool ExecuteSql(string sql)
+    {
+        IDbConnection dbConnection = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
+
+        return dbConnection.Execute(sql) > 0;
+    }
+
+    /// <summary>
+    /// Returns the number of rows affected
+    /// </summary>
+    /// <param name="sql"></param>
+    /// <returns></returns>
+    public int ExecuteSqlWithRowCount(string sql)
+    {
+        IDbConnection dbConnection = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
+
+        return dbConnection.Execute(sql);
     }
 }
 
