@@ -262,6 +262,23 @@
           }
         }
       },
+      "Microsoft.EntityFrameworkCore.SqlServer/8.0.7": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Data.SqlClient": "5.1.5",
+          "Microsoft.EntityFrameworkCore.Relational": "8.0.7"
+        },
+        "compile": {
+          "lib/net8.0/Microsoft.EntityFrameworkCore.SqlServer.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Microsoft.EntityFrameworkCore.SqlServer.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "Microsoft.Extensions.ApiDescription.Server/6.0.5": {
         "type": "package",
         "build": {
@@ -1306,6 +1323,21 @@
         "lib/net8.0/Microsoft.EntityFrameworkCore.Relational.xml",
         "microsoft.entityframeworkcore.relational.8.0.7.nupkg.sha512",
         "microsoft.entityframeworkcore.relational.nuspec"
+      ]
+    },
+    "Microsoft.EntityFrameworkCore.SqlServer/8.0.7": {
+      "sha512": "6gwbwmXkCb+IGxTQ81KqwGjN15r3bv7PLlb4Ox/cYDqdPFbHXMsk0zgtKyPCiXqkFH2LG7KpvVYUBlu4PyTKZQ==",
+      "type": "package",
+      "path": "microsoft.entityframeworkcore.sqlserver/8.0.7",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "PACKAGE.md",
+        "lib/net8.0/Microsoft.EntityFrameworkCore.SqlServer.dll",
+        "lib/net8.0/Microsoft.EntityFrameworkCore.SqlServer.xml",
+        "microsoft.entityframeworkcore.sqlserver.8.0.7.nupkg.sha512",
+        "microsoft.entityframeworkcore.sqlserver.nuspec"
       ]
     },
     "Microsoft.Extensions.ApiDescription.Server/6.0.5": {
@@ -2839,6 +2871,7 @@
       "Microsoft.Data.SqlClient >= 5.2.1",
       "Microsoft.EntityFrameworkCore >= 8.0.7",
       "Microsoft.EntityFrameworkCore.Relational >= 8.0.7",
+      "Microsoft.EntityFrameworkCore.sqlserver >= 8.0.7",
       "Swashbuckle.AspNetCore >= 6.4.0",
       "dapper >= 2.1.35"
     ]
@@ -2904,6 +2937,10 @@
             "version": "[8.0.7, )"
           },
           "Microsoft.EntityFrameworkCore.Relational": {
+            "target": "Package",
+            "version": "[8.0.7, )"
+          },
+          "Microsoft.EntityFrameworkCore.sqlserver": {
             "target": "Package",
             "version": "[8.0.7, )"
           },

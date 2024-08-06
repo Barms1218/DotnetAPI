@@ -16,6 +16,15 @@ public class DataContextEF : DbContext
         _configuration = configuration;
     }
 
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        if (!optionsBuilder.IsConfigured)
+        {
+            optionsBuilder.UseSqlServer(_configuration.GetConnectionString("DefaultConnectionString"),
+            optionsBuilder => optionsBuilder.EnableRetryOnFailure());
+        }
+    }
+
     public virtual DbSet<User> Users { get; set; }
 
     public virtual DbSet<UserSalary> UserSalary { get; set; }
@@ -27,5 +36,7 @@ public class DataContextEF : DbContext
         modelBuilder.HasDefaultSchema("TutorialAppSchema");
 
         modelBuilder.Entity<User>().ToTable("Users", "TutorialAppSchema").HasKey(u => u.UserId);
+                modelBuilder.Entity<UserSalary>().ToTable("UserSalary", "TutorialAppSchema").HasKey(u => u.UserId);
+                        modelBuilder.Entity<UserJobInfo>().ToTable("UserJobInfo", "TutorialAppSchema").HasKey(u => u.UserId);
     }
 }
