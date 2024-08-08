@@ -5,7 +5,7 @@ namespace DotNetAPI.Data;
 
 public class DataContextEF : DbContext
 {
-    private readonly IConfiguration _configuration; // Can only be assigned at declaration or in a constructor
+    private readonly IConfiguration _config; // Can only be assigned at declaration or in a constructor
 
     /// <summary>
     /// Constrcutor
@@ -13,14 +13,14 @@ public class DataContextEF : DbContext
     /// <param name="configuration"></param>
     public DataContextEF(IConfiguration configuration)
     {
-        _configuration = configuration;
+        _config = configuration;
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         if (!optionsBuilder.IsConfigured)
         {
-            optionsBuilder.UseSqlServer(_configuration.GetConnectionString("DefaultConnectionString"),
+            optionsBuilder.UseSqlServer(_config.GetConnectionString("DefaultConnection"),
             optionsBuilder => optionsBuilder.EnableRetryOnFailure());
         }
     }
@@ -36,7 +36,7 @@ public class DataContextEF : DbContext
         modelBuilder.HasDefaultSchema("TutorialAppSchema");
 
         modelBuilder.Entity<User>().ToTable("Users", "TutorialAppSchema").HasKey(u => u.UserId);
-                modelBuilder.Entity<UserSalary>().ToTable("UserSalary", "TutorialAppSchema").HasKey(u => u.UserId);
-                        modelBuilder.Entity<UserJobInfo>().ToTable("UserJobInfo", "TutorialAppSchema").HasKey(u => u.UserId);
+        modelBuilder.Entity<UserSalary>().ToTable("UserSalary", "TutorialAppSchema").HasKey(s => s.UserId);
+        modelBuilder.Entity<UserJobInfo>().ToTable("UserJobInfo", "TutorialAppSchema").HasKey(j => j.UserId);
     }
 }

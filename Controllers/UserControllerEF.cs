@@ -248,7 +248,6 @@ public class UserControllerEF : ControllerBase
 
     #endregion
 
-
     #region Job Info Region
 
     /// <summary>
