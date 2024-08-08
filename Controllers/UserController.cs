@@ -47,6 +47,12 @@ public class UserController : ControllerBase
         return _dapper.LoadData<UserSalary>("SELECT * FROM TutorialAppSchema.UserSalary");
     }
 
+    [HttpGet("UserJobs")]
+    public IEnumerable<UserJobInfo> GetJobs()
+    {
+        return _dapper.LoadData<UserJobInfo>("SELECT * FROM TutorialAppSchema.UserJobInfo");
+    }
+
     /// <summary>
     /// Get all users that are currently active
     /// </summary>
@@ -80,11 +86,20 @@ public class UserController : ControllerBase
         return _dapper.LoadDataSingle<UserSalary>(query);
     }
 
+    [HttpGet("GetJob/{userId}")]
+    public UserJobInfo GetSingleJob(int userId)
+    {
+        string query = $@"SELECT * FROM TutorialAppSchema.UserJobInfo
+        WHERE UserId = {userId}";
+
+        return _dapper.LoadDataSingle<UserJobInfo>(query);
+    }
+
 
     [HttpPut("EditUser")]
     public IActionResult EditUser(User user)
     {
-        string sql = $@"
+        string query = $@"
             UPDATE TutorialAppSchema.Users
                 SET [FirstName] = '{user.FirstName}',
                 [LastName] = '{user.LastName}',
@@ -93,8 +108,8 @@ public class UserController : ControllerBase
                 [Active] = {Convert.ToInt32(user.Active)}
                     WHERE UserId = {user.UserId}";
 
-        Console.Write(sql);
-        if (_dapper.ExecuteSql(sql))
+        Console.Write(query);
+        if (_dapper.ExecuteSql(query))
         {
             return Ok();
         }
@@ -112,19 +127,36 @@ public class UserController : ControllerBase
             WHERE UserId = {userSalary.UserId}";
 
         Console.WriteLine(query);
-        if (_dapper.ExecuteSql(query))
+        if (_dapper.ExecuteSql(query) == false)
         {
-            return Ok();
+            throw new Exception($"Could not find user");
         }
 
-        throw new Exception($"Could not find user");
+        return Ok();
+    }
+
+    [HttpPut("EditJob")]
+    public IActionResult EditJob(UserJobInfo userJobInfo)
+    {
+        string query = $@"
+        UPDATE TutorialAppSchema.UserJobInfo
+            SET [JobTitle] = '{userJobInfo.JobTitle}',
+            [Department] = '{userJobInfo.Department}'
+                WHERE UserId = {userJobInfo.UserId}";
+
+        if (_dapper.ExecuteSql(query) == false)
+        {
+            throw new Exception("Could not locate user.");
+        }
+
+        return Ok();
     }
 
 
     [HttpPost("AddUser")]
     public IActionResult AddUser(UserToAddDto user)
     {
-        string sql = $@"
+        string query = $@"
             INSERT INTO TutorialAppSchema.Users(
             [FirstName],
             [LastName],
@@ -138,27 +170,92 @@ public class UserController : ControllerBase
                 '{user.Gender}',
                 {Convert.ToInt32(user.Active)}
             )";
-        Console.Write(sql);
-        if (_dapper.ExecuteSql(sql))
+
+        Console.Write(query);
+        if (_dapper.ExecuteSql(query) == false)
         {
-            return Ok();
+            throw new Exception("Failed to add user");
         }
 
-        throw new Exception("Failed to add user");
+        return Ok();
+    }
+
+    [HttpPost("AddSalary")]
+    public IActionResult AddSalary(UserSalaryDto salary)
+    {
+        string query = $@"
+        INSERT INTO TutorialAppSchema.UserSalary 
+        (
+            [Salary] = {salary.Salary}m
+            [AvgSalary] = {salary.AvgSalary}
+        )";
+
+        Console.WriteLine(query);
+        if (_dapper.ExecuteSql(query) == false)
+        {
+            throw new Exception("Could not add salary");
+        }
+
+        return Ok();
+    }
+
+    [HttpPost("AddJob")]
+    public IActionResult AddJob(UserJobInfoDto userJobInfo)
+    {
+        string query = $@"Insert INTO TutorialAppSchema.UserJobInfo
+        (
+        [JobTitle] = '{userJobInfo.JobTitle}',
+        [Department] = '{userJobInfo.Department}'
+        )";
+
+        if (_dapper.ExecuteSql(query) == false)
+        {
+            throw new Exception("Could not add job information.");
+        }
+
+        return Created();
     }
 
     [HttpDelete("DeleteUser/{userId}")]
     public IActionResult DeleteUser(int userId)
     {
-        string sql = $@"DELETE FROM TutorialAppSchema.Users
+        string query = $@"DELETE FROM TutorialAppSchema.Users
             WHERE UserId = {userId}";
 
-        Console.Write(sql);
-        if (_dapper.ExecuteSql(sql))
+        Console.Write(query);
+        if (_dapper.ExecuteSql(query) == false)
         {
-            return NoContent();
+            throw new Exception("Failed to delete user");
         }
 
-        throw new Exception("Failed to delete user");
+        return NoContent();
+    }
+
+    [HttpDelete("DeleteSalary/{userId}")]
+    public IActionResult DeleteSalary(int userId)
+    {
+        string query = $@"DELETE FROM TutorialAppSchema.UserSalary
+        WHERE UserId = {userId}";
+
+        if (_dapper.ExecuteSql(query) == false)
+        {
+            throw new Exception("Failed to delete user");
+        }
+
+        return NoContent();
+    }
+
+    [HttpDelete("DeleteJob/{userId}")]
+    public IActionResult DeleteJob(int userId)
+    {
+        string query = $@"DELETE FROM TutorialAppSchema.UserJobInfo
+            WHERE UserId = {userId}";
+
+        if (_dapper.ExecuteSql(query) == false)
+        {
+            throw new Exception("Could not find user.");
+        }
+
+        return NoContent();
     }
 }
