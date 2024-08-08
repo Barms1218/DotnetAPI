@@ -14,6 +14,7 @@ public class UserControllerEF : ControllerBase
 {
     DataContextEF _entityFramework;
     IMapper _mapper;
+
     /// <summary>
     /// Constructor that reads the 
     /// </summary>
@@ -28,16 +29,24 @@ public class UserControllerEF : ControllerBase
         }));
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <returns></returns>
-    // [HttpGet("TestConnection")]
-    // public DateTime TestConnection()
-    // {
-    //     return _entityFramework.GetService(typeof(DateTime)) as DateTime;
-    //     //return _dapper.LoadDataSingle<DateTime>("SELECT GETDATE()");
-    // }
+
+    #region User Region
+
+
+    [HttpPost("AddUser")]
+    public IActionResult AddUser(UserToAddDto user)
+    {
+        User? userDb = _mapper.Map<User>(user);
+
+        _entityFramework.Add(userDb);
+
+        if (_entityFramework.SaveChanges() <= 0)
+        {
+            throw new Exception("Failed to Add user.");
+        }
+
+        return Ok();
+    }
 
     /// <summary>
     /// Get all users from the database
@@ -49,6 +58,7 @@ public class UserControllerEF : ControllerBase
         //IEnumerable<User> users = _dapper.LoadData("SELECT * FROM TutorialAppSchema.Users");
         return _entityFramework.Users.ToList<User>();
     }
+
 
     /// <summary>
     /// Get all users that are currently active
@@ -68,7 +78,8 @@ public class UserControllerEF : ControllerBase
     [HttpGet("GetUser/{userId}")]
     public User GetSingleUser(int userId)
     {
-        User? user = _entityFramework.Users.Where(u => u.UserId == userId).FirstOrDefault<User>();
+        User? user = _entityFramework.Users.
+        Where(u => u.UserId == userId).FirstOrDefault<User>();
 
         if (user == null)
         {
@@ -78,6 +89,12 @@ public class UserControllerEF : ControllerBase
         return user;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="user"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
     [HttpPut("EditUser")]
     public IActionResult EditUser(User user)
     {
@@ -104,21 +121,6 @@ public class UserControllerEF : ControllerBase
     }
 
 
-    [HttpPost("AddUser")]
-    public IActionResult AddUser(UserToAddDto user)
-    {
-        User? userDb = _mapper.Map<User>(user);
-
-        _entityFramework.Add(userDb);
-
-        if (_entityFramework.SaveChanges() <= 0)
-        {
-            throw new Exception("Failed to Add user.");
-        }
-
-        return Ok();
-    }
-
     [HttpDelete("DeleteUser/{userId}")]
     public IActionResult DeleteUser(int userId)
     {
@@ -140,4 +142,212 @@ public class UserControllerEF : ControllerBase
 
         return Ok();
     }
+
+
+
+    #endregion
+
+    #region Salary Region
+
+
+    [HttpPost("AddSalary")]
+    public IActionResult AddSalary(UserSalary newSalary)
+    {
+        UserSalary? salaryDb = _mapper.Map<UserSalary>(newSalary);
+
+        _entityFramework.Add(salaryDb);
+
+        if (_entityFramework.SaveChanges() <= 0)
+        {
+            throw new Exception("Could not find User.");
+        }
+
+        return Ok();
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet("GetSalaries")]
+    public IEnumerable<UserSalary> GetSalaries()
+    {
+        return _entityFramework.UserSalary.ToList<UserSalary>();
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
+    [HttpGet("GetSalary/{userId}")]
+    public UserSalary GetSingleSalary(int userId)
+    {
+        UserSalary? salary = _entityFramework.UserSalary.
+        Where(s => s.UserId == userId).FirstOrDefault<UserSalary>();
+
+        if (salary == null)
+        {
+            throw new Exception("Could not find user.");
+        }
+
+        return salary;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="updatedSalary"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
+    [HttpPut("EditSalary")]
+    public IActionResult EditSalary(UserSalary updatedSalary)
+    {
+        if (updatedSalary == null)
+        {
+            throw new Exception("Unable to edit user.");
+        }
+
+        UserSalary? salaryDb = _entityFramework.UserSalary.
+        Where(s => s.UserId == updatedSalary.UserId).FirstOrDefault<UserSalary>();
+
+
+        salaryDb.Salary = updatedSalary.Salary;
+        salaryDb.AvgSalary = updatedSalary.AvgSalary;
+
+        if (_entityFramework.SaveChanges() <= 0)
+        {
+            throw new Exception("Unable to edit user.");
+        }
+
+        return Ok();
+    }
+
+    [HttpDelete("DeleteSalary/{userId}")]
+    public IActionResult DeleteSalary(int userId)
+    {
+        UserSalary? salaryDb = _entityFramework.UserSalary.
+        Where(s => s.UserId == userId).
+        FirstOrDefault<UserSalary>();
+
+        if (salaryDb == null)
+        {
+            return NotFound();
+        }
+
+        _entityFramework.Remove(salaryDb);
+
+        if (_entityFramework.SaveChanges() <= 0)
+        {
+            throw new Exception("Failed to delete Salary.");
+        }
+
+        return NoContent();
+    }
+
+    #endregion
+
+
+    #region Job Info Region
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="newJobInfo"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
+    [HttpPost("AddJob")]
+    public IActionResult CreateJobInfo(UserJobInfoDto newJobInfo)
+    {
+        UserJobInfo? jobInfoDto = _mapper.Map<UserJobInfo>(newJobInfo);
+
+        _entityFramework.Add(jobInfoDto);
+
+        if (_entityFramework.SaveChanges() <= 0)
+        {
+            throw new Exception("Could not add job information.");
+        }
+
+        return Created();
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet("GetJobs")]
+    public IEnumerable<UserJobInfo> GetJobs()
+    {
+        return _entityFramework.UserJobInfo.ToList<UserJobInfo>();
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    [HttpGet("GetSingleJob/{userId}")]
+    public UserJobInfo GetSingleJob(int userId)
+    {
+        UserJobInfo? jobInfo = _entityFramework.UserJobInfo.ToList<UserJobInfo>().
+            Where(j => j.UserId == userId).
+                FirstOrDefault<UserJobInfo>();
+
+        return jobInfo;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="userJobInfo"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
+    [HttpPut("EditJob/{userId}")]
+    public IActionResult EditJob(UserJobInfo userJobInfo)
+    {
+
+        if (userJobInfo == null)
+        {
+            return NotFound();
+        }
+
+        UserJobInfo? jobInfo = _entityFramework.UserJobInfo.ToList<UserJobInfo>().
+            Where(j => j.UserId == userJobInfo.UserId).
+                FirstOrDefault<UserJobInfo>();
+
+        jobInfo.JobTitle = userJobInfo.JobTitle;
+        jobInfo.Department = userJobInfo.Department;
+
+        if (_entityFramework.SaveChanges() <= 0)
+        {
+            throw new Exception("Could not locate user.");
+        }
+
+        return Ok();
+    }
+
+    [HttpDelete("DeleteJob/{userId}")]
+    public IActionResult DeleteJob(int userId)
+    {
+        UserJobInfo? jobInfoDb = _entityFramework.UserJobInfo.
+            Where(j => j.UserId == userId).
+                FirstOrDefault<UserJobInfo>();
+
+        if (jobInfoDb == null)
+        {
+            return NotFound();
+        }
+
+        _entityFramework.Remove(jobInfoDb);
+
+        if (_entityFramework.SaveChanges() <= 0)
+        {
+            throw new Exception("Failed to delete Salary.");
+        }
+
+        return NoContent();
+    }
+
+    #endregion
 }
