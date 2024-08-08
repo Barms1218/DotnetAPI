@@ -3,6 +3,7 @@ using AutoMapper;
 using DotNetAPI.Data;
 using DotNetAPI.Dtos;
 using DotNetAPI.Models;
+using DotNetAPI.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 
@@ -12,7 +13,9 @@ namespace DotNetAPI.Controllers;
 [Route("[controller]")]
 public class UserControllerEF : ControllerBase
 {
-    DataContextEF _entityFramework;
+    private UserRepository _repository;
+
+    private DataContextEF _entityFramework;
     IMapper _mapper;
 
     /// <summary>
@@ -21,7 +24,7 @@ public class UserControllerEF : ControllerBase
     /// <param name="configuration"></param>
     public UserControllerEF(IConfiguration configuration)
     {
-        _entityFramework = new DataContextEF(configuration);
+        _repository = new UserRepository(configuration);
 
         _mapper = new Mapper(new MapperConfiguration(cfg =>
         {
@@ -38,9 +41,9 @@ public class UserControllerEF : ControllerBase
     {
         User? userDb = _mapper.Map<User>(user);
 
-        _entityFramework.Add(userDb);
+        _repository.AddEntity(userDb);
 
-        if (_entityFramework.SaveChanges() <= 0)
+        if (_repository.SaveChanges() == false)
         {
             throw new Exception("Failed to Add user.");
         }
@@ -112,7 +115,7 @@ public class UserControllerEF : ControllerBase
         userDb.Email = user.Email;
         userDb.Gender = user.Gender;
 
-        if (_entityFramework.SaveChanges() <= 0)
+        if (_repository.SaveChanges() == false)
         {
             throw new Exception("Unable to edit user.");
         }
@@ -133,9 +136,9 @@ public class UserControllerEF : ControllerBase
             return NotFound();
         }
 
-        _entityFramework.Remove(userDb);
+        _repository.RemoveEntity(userDb);
 
-        if (_entityFramework.SaveChanges() <= 0)
+        if (_repository.SaveChanges() == false)
         {
             throw new Exception("Failed to Delete user.");
         }
@@ -155,9 +158,9 @@ public class UserControllerEF : ControllerBase
     {
         UserSalary? salaryDb = _mapper.Map<UserSalary>(newSalary);
 
-        _entityFramework.Add(salaryDb);
+        _repository.AddEntity(salaryDb);
 
-        if (_entityFramework.SaveChanges() <= 0)
+        if (_repository.SaveChanges() == false)
         {
             throw new Exception("Could not find User.");
         }
@@ -216,7 +219,7 @@ public class UserControllerEF : ControllerBase
         salaryDb.Salary = updatedSalary.Salary;
         salaryDb.AvgSalary = updatedSalary.AvgSalary;
 
-        if (_entityFramework.SaveChanges() <= 0)
+        if (_repository.SaveChanges() == false)
         {
             throw new Exception("Unable to edit user.");
         }
@@ -236,9 +239,9 @@ public class UserControllerEF : ControllerBase
             return NotFound();
         }
 
-        _entityFramework.Remove(salaryDb);
+        _repository.RemoveEntity(salaryDb);
 
-        if (_entityFramework.SaveChanges() <= 0)
+        if (_repository.SaveChanges() == false)
         {
             throw new Exception("Failed to delete Salary.");
         }
@@ -261,9 +264,9 @@ public class UserControllerEF : ControllerBase
     {
         UserJobInfo? jobInfoDto = _mapper.Map<UserJobInfo>(newJobInfo);
 
-        _entityFramework.Add(jobInfoDto);
+        _repository.AddEntity(jobInfoDto);
 
-        if (_entityFramework.SaveChanges() <= 0)
+        if (_repository.SaveChanges() == false)
         {
             throw new Exception("Could not add job information.");
         }
@@ -318,7 +321,7 @@ public class UserControllerEF : ControllerBase
         jobInfo.JobTitle = userJobInfo.JobTitle;
         jobInfo.Department = userJobInfo.Department;
 
-        if (_entityFramework.SaveChanges() <= 0)
+        if (_repository.SaveChanges() == false)
         {
             throw new Exception("Could not locate user.");
         }
@@ -338,9 +341,9 @@ public class UserControllerEF : ControllerBase
             return NotFound();
         }
 
-        _entityFramework.Remove(jobInfoDb);
+        _repository.RemoveEntity(jobInfoDb);
 
-        if (_entityFramework.SaveChanges() <= 0)
+        if (_repository.SaveChanges() == false)
         {
             throw new Exception("Failed to delete Salary.");
         }
