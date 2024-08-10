@@ -13,8 +13,7 @@ namespace DotNetAPI.Controllers;
 [Route("[controller]")]
 public class UserControllerEF : ControllerBase
 {
-    private UserRepository _repository;
-
+    private IUserRepository _repository;
     private DataContextEF _entityFramework;
     IMapper _mapper;
 
@@ -22,9 +21,9 @@ public class UserControllerEF : ControllerBase
     /// Constructor that reads the 
     /// </summary>
     /// <param name="configuration"></param>
-    public UserControllerEF(IConfiguration configuration)
+    public UserControllerEF(IConfiguration configuration, IUserRepository repository)
     {
-        _repository = new UserRepository(configuration);
+        _repository = repository;
 
         _mapper = new Mapper(new MapperConfiguration(cfg =>
         {
@@ -59,7 +58,7 @@ public class UserControllerEF : ControllerBase
     public IEnumerable<User> GetUsers()
     {
         //IEnumerable<User> users = _dapper.LoadData("SELECT * FROM TutorialAppSchema.Users");
-        return _entityFramework.Users.ToList<User>();
+        return _repository.GetUsers();
     }
 
 
@@ -70,26 +69,16 @@ public class UserControllerEF : ControllerBase
     [HttpGet("GetActiveUsers")]
     public IEnumerable<User> GetActiveUsers()
     {
-        return _entityFramework.Users.Where(u => u.Active);
+        return _repository.GetActiveUsers();
     }
 
     /// <summary>
     /// Get a single user from the database by their user id
     /// </summary>
-    /// <param name="userId"></param>
-    /// <returns>The User from the database</returns>
     [HttpGet("GetUser/{userId}")]
     public User GetSingleUser(int userId)
     {
-        User? user = _entityFramework.Users.
-        Where(u => u.UserId == userId).FirstOrDefault<User>();
-
-        if (user == null)
-        {
-            throw new Exception("Could not find user");
-        }
-
-        return user;
+        return _repository.GetSingleUser(userId);
     }
 
     /// <summary>
@@ -106,7 +95,7 @@ public class UserControllerEF : ControllerBase
             throw new Exception("Unable to edit user.");
         }
 
-        User? userDb = _entityFramework.Users.Where(u => u.UserId == user.UserId).FirstOrDefault<User>();
+        User? userDb = _repository.GetSingleUser(user.UserId);
 
 
         userDb.Active = user.Active;

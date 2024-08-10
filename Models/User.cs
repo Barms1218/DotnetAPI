@@ -1,3 +1,4 @@
+
 namespace DotNetAPI.Models;
 
 public partial class User
@@ -8,4 +9,9 @@ public partial class User
     public string Email { get; set; } = "";
     public string Gender { get; set; } = "";
     public bool Active { get; set; } = false;
+
+    internal object Where(Func<object, bool> value)
+    {
+        throw new NotImplementedException();
+    }
 }
