@@ -5,7 +5,6 @@ using DotNetAPI.Dtos;
 using DotNetAPI.Models;
 using DotNetAPI.Repositories;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace DotNetAPI.Controllers;
 
@@ -14,7 +13,6 @@ namespace DotNetAPI.Controllers;
 public class UserControllerEF : ControllerBase
 {
     private IUserRepository _repository;
-    private DataContextEF _entityFramework;
     IMapper _mapper;
 
     /// <summary>
@@ -116,9 +114,7 @@ public class UserControllerEF : ControllerBase
     [HttpDelete("DeleteUser/{userId}")]
     public IActionResult DeleteUser(int userId)
     {
-        User? userDb = _entityFramework.Users
-        .Where(u => u.UserId == userId)
-        .FirstOrDefault<User>();
+        User? userDb = _repository.GetSingleUser(userId);
 
         if (userDb == null)
         {
@@ -164,7 +160,7 @@ public class UserControllerEF : ControllerBase
     [HttpGet("GetSalaries")]
     public IEnumerable<UserSalary> GetSalaries()
     {
-        return _entityFramework.UserSalary.ToList<UserSalary>();
+        return _repository.GetSalaries();
     }
 
     /// <summary>
@@ -176,15 +172,7 @@ public class UserControllerEF : ControllerBase
     [HttpGet("GetSalary/{userId}")]
     public UserSalary GetSingleSalary(int userId)
     {
-        UserSalary? salary = _entityFramework.UserSalary.
-        Where(s => s.UserId == userId).FirstOrDefault<UserSalary>();
-
-        if (salary == null)
-        {
-            throw new Exception("Could not find user.");
-        }
-
-        return salary;
+        return _repository.GetSingleSalary(userId);
     }
 
     /// <summary>
@@ -201,8 +189,7 @@ public class UserControllerEF : ControllerBase
             throw new Exception("Unable to edit user.");
         }
 
-        UserSalary? salaryDb = _entityFramework.UserSalary.
-        Where(s => s.UserId == updatedSalary.UserId).FirstOrDefault<UserSalary>();
+        UserSalary? salaryDb = _repository.GetSingleSalary(updatedSalary.UserId);
 
 
         salaryDb.Salary = updatedSalary.Salary;
@@ -219,9 +206,7 @@ public class UserControllerEF : ControllerBase
     [HttpDelete("DeleteSalary/{userId}")]
     public IActionResult DeleteSalary(int userId)
     {
-        UserSalary? salaryDb = _entityFramework.UserSalary.
-        Where(s => s.UserId == userId).
-        FirstOrDefault<UserSalary>();
+        UserSalary? salaryDb = _repository.GetSingleSalary(userId);
 
         if (salaryDb == null)
         {
@@ -270,7 +255,7 @@ public class UserControllerEF : ControllerBase
     [HttpGet("GetJobs")]
     public IEnumerable<UserJobInfo> GetJobs()
     {
-        return _entityFramework.UserJobInfo.ToList<UserJobInfo>();
+        return _repository.GetJobs();
     }
 
     /// <summary>
@@ -281,11 +266,7 @@ public class UserControllerEF : ControllerBase
     [HttpGet("GetSingleJob/{userId}")]
     public UserJobInfo GetSingleJob(int userId)
     {
-        UserJobInfo? jobInfo = _entityFramework.UserJobInfo.ToList<UserJobInfo>().
-            Where(j => j.UserId == userId).
-                FirstOrDefault<UserJobInfo>();
-
-        return jobInfo;
+        return _repository.GetSingleJob(userId);
     }
 
     /// <summary>
@@ -303,9 +284,7 @@ public class UserControllerEF : ControllerBase
             return NotFound();
         }
 
-        UserJobInfo? jobInfo = _entityFramework.UserJobInfo.ToList<UserJobInfo>().
-            Where(j => j.UserId == userJobInfo.UserId).
-                FirstOrDefault<UserJobInfo>();
+        UserJobInfo? jobInfo = _repository.GetSingleJob(userJobInfo.UserId);
 
         jobInfo.JobTitle = userJobInfo.JobTitle;
         jobInfo.Department = userJobInfo.Department;
@@ -321,9 +300,7 @@ public class UserControllerEF : ControllerBase
     [HttpDelete("DeleteJob/{userId}")]
     public IActionResult DeleteJob(int userId)
     {
-        UserJobInfo? jobInfoDb = _entityFramework.UserJobInfo.
-            Where(j => j.UserId == userId).
-                FirstOrDefault<UserJobInfo>();
+        UserJobInfo? jobInfoDb = _repository.GetSingleJob(userId);
 
         if (jobInfoDb == null)
         {

@@ -1,12 +1,11 @@
 using DotNetAPI.Data;
 using DotNetAPI.Models;
-using Microsoft.AspNetCore.Mvc;
 
 namespace DotNetAPI.Repositories;
 
 public class UserRepository : IUserRepository
 {
-    DataContextEF _entityFramework;
+    private DataContextEF _entityFramework;
 
     /// <summary>
     /// Constructor that reads the 
@@ -21,10 +20,7 @@ public class UserRepository : IUserRepository
     /// 
     /// </summary>
     /// <returns></returns>
-    public bool SaveChanges()
-    {
-        return _entityFramework.SaveChanges() > 0;
-    }
+    public bool SaveChanges() => _entityFramework.SaveChanges() > 0;
 
 
     public void AddEntity<T>(T newEntity)
@@ -47,28 +43,20 @@ public class UserRepository : IUserRepository
         _entityFramework.Remove(newEntity);
     }
 
-    public IEnumerable<User> GetUsers()
-    {
-        //IEnumerable<User> users = _dapper.LoadData("SELECT * FROM TutorialAppSchema.Users");
-        return _entityFramework.Users.ToList<User>();
-    }
+    public IEnumerable<User> GetUsers() => _entityFramework.Users.ToList<User>();
 
-    public IEnumerable<User> GetActiveUsers()
-    {
-        return _entityFramework.Users.Where(u => u.Active);
-    }
+    public IEnumerable<UserSalary> GetSalaries() => _entityFramework.UserSalary.ToList<UserSalary>();
+
+    public IEnumerable<UserJobInfo> GetJobs() => _entityFramework.UserJobInfo.ToList<UserJobInfo>();
+
+    public IEnumerable<User> GetActiveUsers() => _entityFramework.Users.Where(u => u.Active);
 
     public User GetSingleUser(int userId)
     {
         User? user = _entityFramework.Users.
         Where(u => u.UserId == userId).FirstOrDefault<User>();
 
-        if (user == null)
-        {
-            throw new Exception("Could not find user");
-        }
-
-        return user;
+        return user ?? throw new Exception("Could not find user");
     }
 
     public UserJobInfo GetSingleJob(int userId)
@@ -76,12 +64,7 @@ public class UserRepository : IUserRepository
         UserJobInfo? job = _entityFramework.UserJobInfo.
         Where(j => j.UserId == userId).FirstOrDefault<UserJobInfo>();
 
-        if (job == null)
-        {
-            throw new Exception("Could not find user");
-        }
-
-        return job;
+        return job ?? throw new Exception("Could not find user");
     }
 
     public UserSalary GetSingleSalary(int userId)
@@ -89,35 +72,6 @@ public class UserRepository : IUserRepository
         UserSalary? salary = _entityFramework.UserSalary.
         Where(s => s.UserId == userId).FirstOrDefault<UserSalary>();
 
-        if (salary == null)
-        {
-            throw new Exception("Could not find user");
-        }
-
-        return salary;
-    }
-
-    public IActionResult EditUser(User user)
-    {
-        if (user == null)
-        {
-            throw new Exception("Unable to edit user.");
-        }
-
-        User? userDb = _entityFramework.Users.Where(u => u.UserId == user.UserId).FirstOrDefault<User>();
-
-
-        userDb.Active = user.Active;
-        userDb.FirstName = user.FirstName;
-        userDb.LastName = user.LastName;
-        userDb.Email = user.Email;
-        userDb.Gender = user.Gender;
-
-        if (SaveChanges() == false)
-        {
-            throw new Exception("Unable to edit user.");
-        }
-
-        return Ok();
+        return salary ?? throw new Exception("Could not find user");
     }
 }

@@ -13,9 +13,15 @@ public interface IUserRepository
 
     public IEnumerable<User> GetUsers();
 
+    public IEnumerable<UserSalary> GetSalaries();
+
+    public IEnumerable<UserJobInfo> GetJobs();
+
     public IEnumerable<User> GetActiveUsers();
 
     public User GetSingleUser(int userId);
 
-    public IActionResult EditUser(User user);
+    public UserJobInfo GetSingleJob(int userId);
+
+    public UserSalary GetSingleSalary(int userId);
 }
