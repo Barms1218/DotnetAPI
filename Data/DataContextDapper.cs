@@ -62,6 +62,28 @@ class DataContextDapper
 
         return dbConnection.Execute(sql);
     }
+
+    public bool ExecuteSqlWithParameters(string query, List<SqlParameter> parameters)
+    {
+        IDbConnection dbConnection = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
+
+        SqlCommand commandWithParams = new SqlCommand(query);
+
+        foreach (SqlParameter param in parameters)
+        {
+            commandWithParams.Parameters.Add(param);
+        }
+
+        dbConnection.Open();
+
+        commandWithParams.Connection = (SqlConnection)dbConnection;
+
+        int rowsAffected = commandWithParams.ExecuteNonQuery(); // Get the number of rows affected
+
+        dbConnection.Close();
+
+        return rowsAffected > 0;
+    }
 }
 
 
