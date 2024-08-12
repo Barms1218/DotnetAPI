@@ -41,8 +41,8 @@ public class AuthController : ControllerBase
         {
             string query = $@"SELECT Email FROM TutorialAppSchema.Auth WHERE Email = '{user.Email}'";
 
-            IEnumerable<string> existingUsers = _dapper.LoadData<string>(query);
-            if (existingUsers.Count() > 0)
+            IEnumerable<string> existingUsers = _dapper.GetRows<string>(query);
+            if (existingUsers.Count() == 0)
             {
                 byte[] passwordSalt = new byte[128 / 8];
 
@@ -54,17 +54,14 @@ public class AuthController : ControllerBase
                 // Make the password much bigger and much harder to brute force with all the random characters
                 byte[] passwordHash = CreatePasswordHash(user.Password, passwordSalt);
 
-                string addAuthQuery = $@"INSERT INTO TutorialAppSchema.Auth,
-                [Email],
+                string addAuthQuery = $@"INSERT INTO TutorialAppSchema.Auth ([Email],
                 [Passwordhash],
-                [PasswordSalt] VALUES (
-                '{user.Email}',
-                @PasswordHash,
-                @PasswordSalt)";
+                [PasswordSalt]) VALUES (
+                '{user.Email}', @PasswordHash, @PasswordSalt)";
 
                 List<SqlParameter> sqlParameters = CreateSqlParameters(passwordSalt, passwordHash);
 
-                if (_dapper.ExecuteSqlWithParameters(query, sqlParameters))
+                if (_dapper.ExecuteSqlWithParameters(addAuthQuery, sqlParameters))
                 {
                     return Ok();
                 }
@@ -87,10 +84,18 @@ public class AuthController : ControllerBase
         FROM TutorialAppSchema.Auth WHERE Email = '{user.Email}'";
 
         UserForLoginConfirmationDto userConfirmation = _dapper.
-        LoadDataSingle<UserForLoginConfirmationDto>(sqlForHashAndSalt);
+        GetSingleRow<UserForLoginConfirmationDto>(sqlForHashAndSalt);
 
 
+        byte[] passwordHash = CreatePasswordHash(user.Password, userConfirmation.PasswordSalt);
 
+        for (int i = 0; i < passwordHash.Length; i++)
+        {
+            if (passwordHash[i] != userConfirmation.PasswordHash[i])
+            {
+                return StatusCode(401, "Incorrect Password.");
+            }
+        }
 
         return Ok();
     }
@@ -130,19 +135,17 @@ public class AuthController : ControllerBase
     /// <param name="password">The password that is going to get hashed.</param>
     /// <param name="passwordSalt">The byte array representing the password salt.</param>
     /// <returns>A byte array representing the generated password hash.</returns>
-
     private byte[] CreatePasswordHash(string password, byte[] passwordSalt)
     {
         string? passwordSaltString = _config.GetSection("AppSettings:PasswordKey").
         Value + Convert.ToBase64String(passwordSalt);
 
-        byte[] passwordHash = KeyDerivation.Pbkdf2(
+        return KeyDerivation.Pbkdf2(
             password: password,
             salt: Encoding.ASCII.GetBytes(passwordSaltString),
             prf: KeyDerivationPrf.HMACSHA256,
             iterationCount: 100000,
             numBytesRequested: 256 / 8);
-        return passwordHash;
     }
 
     #endregion

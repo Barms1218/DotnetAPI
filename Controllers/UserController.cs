@@ -27,7 +27,7 @@ public class UserController : ControllerBase
     [HttpGet("TestConnection")]
     public DateTime TestConnection()
     {
-        return _dapper.LoadDataSingle<DateTime>("SELECT GETDATE()");
+        return _dapper.GetSingleRow<DateTime>("SELECT GETDATE()");
     }
 
 
@@ -74,7 +74,7 @@ public class UserController : ControllerBase
     public IEnumerable<User> GetUsers()
     {
         //IEnumerable<User> users = _dapper.LoadData("SELECT * FROM TutorialAppSchema.Users");
-        return _dapper.LoadData<User>("SELECT * FROM TutorialAppSchema.Users");
+        return _dapper.GetRows<User>("SELECT * FROM TutorialAppSchema.Users");
     }
 
 
@@ -87,7 +87,7 @@ public class UserController : ControllerBase
     {
         string query = @"SELECT * FROM TutorialAppSchema.Users 
         WHERE Active = 1";
-        return _dapper.LoadData<User>(query);
+        return _dapper.GetRows<User>(query);
     }
 
     /// <summary>
@@ -100,7 +100,7 @@ public class UserController : ControllerBase
     {
         string query = $@"SELECT * FROM TutorialAppSchema.Users 
         WHERE UserId = {userId}";
-        return _dapper.LoadDataSingle<User>(query);
+        return _dapper.GetSingleRow<User>(query);
     }
 
     /// <summary>
@@ -194,7 +194,7 @@ public class UserController : ControllerBase
     [HttpGet("GetSalaries")]
     public IEnumerable<UserSalary> GetSalaries()
     {
-        return _dapper.LoadData<UserSalary>("SELECT * FROM TutorialAppSchema.UserSalary");
+        return _dapper.GetRows<UserSalary>("SELECT * FROM TutorialAppSchema.UserSalary");
     }
 
 
@@ -208,7 +208,7 @@ public class UserController : ControllerBase
     {
         string query = $@"SELECT * FROM TutorialAppSchema.UserSalary
                 WHERE UserId = {userId}";
-        return _dapper.LoadDataSingle<UserSalary>(query);
+        return _dapper.GetSingleRow<UserSalary>(query);
     }
 
     /// <summary>
@@ -294,7 +294,7 @@ public class UserController : ControllerBase
     [HttpGet("UserJobs")]
     public IEnumerable<UserJobInfo> GetJobs()
     {
-        return _dapper.LoadData<UserJobInfo>("SELECT * FROM TutorialAppSchema.UserJobInfo");
+        return _dapper.GetRows<UserJobInfo>("SELECT * FROM TutorialAppSchema.UserJobInfo");
     }
 
     /// <summary>
@@ -308,7 +308,7 @@ public class UserController : ControllerBase
         string query = $@"SELECT * FROM TutorialAppSchema.UserJobInfo
         WHERE UserId = {userId}";
 
-        return _dapper.LoadDataSingle<UserJobInfo>(query);
+        return _dapper.GetSingleRow<UserJobInfo>(query);
     }
 
     /// <summary>

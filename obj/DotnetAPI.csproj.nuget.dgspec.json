@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\brand\\Documents\\dotnet_course_practice\\DotnetAPI\\DotnetAPI.csproj": {}
+    "c:\\Users\\brand\\Documents\\dotnet_course_practice\\DotnetAPI\\DotnetAPI.csproj": {}
   },
   "projects": {
-    "C:\\Users\\brand\\Documents\\dotnet_course_practice\\DotnetAPI\\DotnetAPI.csproj": {
+    "c:\\Users\\brand\\Documents\\dotnet_course_practice\\DotnetAPI\\DotnetAPI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\brand\\Documents\\dotnet_course_practice\\DotnetAPI\\DotnetAPI.csproj",
+        "projectUniqueName": "c:\\Users\\brand\\Documents\\dotnet_course_practice\\DotnetAPI\\DotnetAPI.csproj",
         "projectName": "DotnetAPI",
-        "projectPath": "C:\\Users\\brand\\Documents\\dotnet_course_practice\\DotnetAPI\\DotnetAPI.csproj",
+        "projectPath": "c:\\Users\\brand\\Documents\\dotnet_course_practice\\DotnetAPI\\DotnetAPI.csproj",
         "packagesPath": "C:\\Users\\brand\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\brand\\Documents\\dotnet_course_practice\\DotnetAPI\\obj\\",
+        "outputPath": "c:\\Users\\brand\\Documents\\dotnet_course_practice\\DotnetAPI\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\brand\\AppData\\Roaming\\NuGet\\NuGet.Config",

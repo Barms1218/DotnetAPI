@@ -19,7 +19,7 @@ class DataContextDapper
     /// <typeparam name="T"></typeparam>
     /// <param name="sql"></param>
     /// <returns></returns>
-    public IEnumerable<T> LoadData<T>(string sql)
+    public IEnumerable<T> GetRows<T>(string sql)
     {
         IDbConnection dbConnection = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
 
@@ -32,7 +32,7 @@ class DataContextDapper
     /// <typeparam name="T"></typeparam>
     /// <param name="sql"></param>
     /// <returns></returns>
-    public T LoadDataSingle<T>(string sql)
+    public T GetSingleRow<T>(string sql)
     {
         IDbConnection dbConnection = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
 
@@ -63,6 +63,12 @@ class DataContextDapper
         return dbConnection.Execute(sql);
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="query"></param>
+    /// <param name="parameters"></param>
+    /// <returns></returns>
     public bool ExecuteSqlWithParameters(string query, List<SqlParameter> parameters)
     {
         IDbConnection dbConnection = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
