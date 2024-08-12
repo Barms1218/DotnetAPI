@@ -1,4 +1,6 @@
 using System.Data;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using DotNetAPI.Data;
@@ -6,6 +8,7 @@ using DotNetAPI.Dtos;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
+using Microsoft.IdentityModel.Tokens;
 
 namespace DotNetAPI.Controllers;
 
@@ -124,7 +127,15 @@ public class AuthController : ControllerBase
             }
         }
 
-        return Ok();
+        string userIdQuery = $@"SELECT UserId FROM TutorialAppSchema.Users 
+        WHERE Email = '{user.Email}'";
+
+        int userId = _dapper.GetSingleRow<int>(userIdQuery);
+
+        return Ok(new Dictionary<string, string>()
+        {
+            {"token", CreateToken(userId)}
+        });
     }
 
 
@@ -175,10 +186,42 @@ public class AuthController : ControllerBase
             numBytesRequested: 256 / 8);
     }
 
-    // private string CreateToken(int userId)
-    // {
+    /// <summary>
+    /// Created a security key, credentials, and a descriptor to keep the user authenticated for one day
+    /// </summary>
+    /// <param name="userId">Value used to create a claim that the person is authenticated</param>
+    /// <returns></returns>
+    private string CreateToken(int userId)
+    {
+        int daysAuthenticated = 1;
 
-    // }
+        Claim[] claims = new Claim[]
+        {
+            new Claim("userId", userId.ToString())
+        };
+
+        // Token
+        string? tokenKeyString = _config.GetSection("AppSettings:TokenKey").Value;
+        SymmetricSecurityKey securityKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(tokenKeyString != null ? tokenKeyString : ""));
+
+        // Signer
+        SigningCredentials credentials = new SigningCredentials(
+            securityKey, SecurityAlgorithms.HmacSha512Signature);
+
+        SecurityTokenDescriptor descriptor = new SecurityTokenDescriptor()
+        {
+            Subject = new ClaimsIdentity(claims),
+            SigningCredentials = credentials,
+            Expires = DateTime.Now.AddDays(daysAuthenticated)
+        };
+
+        JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
+
+        SecurityToken token = tokenHandler.CreateToken(descriptor);
+
+        return tokenHandler.WriteToken(token);
+    }
 
     #endregion
 }
