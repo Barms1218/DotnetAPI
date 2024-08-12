@@ -63,7 +63,13 @@ public class AuthController : ControllerBase
 
                 if (_dapper.ExecuteSqlWithParameters(addAuthQuery, sqlParameters))
                 {
-                    return Ok();
+                    string createUserQuery = CreateUser(user);
+
+                    if (_dapper.ExecuteSql(createUserQuery))
+                    {
+                        return Ok();
+                    }
+                    throw new Exception("Failed to add user.");
                 }
 
                 throw new Exception("Failed to register user.");
@@ -75,6 +81,27 @@ public class AuthController : ControllerBase
         throw new Exception("Passwords do not match.");
     }
 
+    /// <summary>
+    /// Insert a new user into the Users database table
+    /// </summary>
+    /// <param name="user">The user which will be inserted into the table.</param>
+    private static string CreateUser(UserForRegistrationDto user)
+    {
+        return $@"
+                    INSERT INTO TutorialAppSchema.Users(
+                    [FirstName],
+                    [LastName],
+                    [Email],
+                    [Gender],
+                    [Active]
+                    ) VALUES (
+                        '{user.FirstName}',
+                        '{user.LastName}',
+                        '{user.Email}',
+                        '{user.Gender}',
+                        1
+                    )";
+    }
 
     [HttpPost("Login")]
     public IActionResult Login(UserForLoginDto user)
@@ -147,6 +174,11 @@ public class AuthController : ControllerBase
             iterationCount: 100000,
             numBytesRequested: 256 / 8);
     }
+
+    // private string CreateToken(int userId)
+    // {
+
+    // }
 
     #endregion
 }

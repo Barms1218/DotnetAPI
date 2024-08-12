@@ -42,7 +42,7 @@ public class UserController : ControllerBase
     [HttpPost("AddUser")]
     public IActionResult AddUser(UserToAddDto user)
     {
-        string query = $@"
+        string insertQuery = $@"
             INSERT INTO TutorialAppSchema.Users(
             [FirstName],
             [LastName],
@@ -57,8 +57,8 @@ public class UserController : ControllerBase
                 {Convert.ToInt32(user.Active)}
             )";
 
-        Console.Write(query);
-        if (_dapper.ExecuteSql(query) == false)
+        Console.Write(insertQuery);
+        if (_dapper.ExecuteSql(insertQuery) == false)
         {
             throw new Exception("Failed to add user");
         }
