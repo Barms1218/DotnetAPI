@@ -1,9 +1,13 @@
+namespace DotNetAPI.Data;
+
 using System.Data;
 using Dapper;
 using Microsoft.Data.SqlClient;
 
-namespace DotNetAPI.Data;
 
+/// <summary>
+/// Class contaning methods that allow manipulation and access of the SQL database
+/// </summary>
 class DataContextDapper
 {
     private readonly IConfiguration _config;

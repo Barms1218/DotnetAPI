@@ -72,9 +72,9 @@ else
 
 app.MapControllers();
 
-app.UseAuthorization();
+app.UseAuthentication(); // Always put above UseAuthorization, need to be Authenticated first
 
-app.UseAuthentication();
+app.UseAuthorization();
 
 app.Run();
 

@@ -74,3 +74,4 @@ C:\Users\brand\Documents\dotnet_course_practice\DotnetAPI\bin\Debug\net8.0\Micro
 C:\Users\brand\Documents\dotnet_course_practice\DotnetAPI\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Abstractions.dll
 C:\Users\brand\Documents\dotnet_course_practice\DotnetAPI\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Relational.dll
 C:\Users\brand\Documents\dotnet_course_practice\DotnetAPI\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.SqlServer.dll
+C:\Users\brand\Documents\dotnet_course_practice\DotnetAPI\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
