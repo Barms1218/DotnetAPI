@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using DotNetAPI.Data;
 using DotNetAPI.Dtos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
@@ -12,6 +13,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace DotNetAPI.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("[controller]")]
 public class AuthController : ControllerBase
@@ -26,7 +28,7 @@ public class AuthController : ControllerBase
     }
 
 
-    #region HTTP Requests
+    #region Endpoints
 
     /// <summary>
     /// Handles user registration by checking for existing users, generating a password hash and salt,
@@ -36,7 +38,7 @@ public class AuthController : ControllerBase
     /// <returns>An IActionResult indicating the outcome of the registration process.</returns>
     /// <exception cref="Exception">Thrown if the passwords do not match, the user already exists, 
     /// or if there is an error during the registration process.</exception>
-
+    [AllowAnonymous] // Allowed to receive an anonymous request, does not require a token
     [HttpPost("Register")]
     public IActionResult Register(UserForRegistrationDto user)
     {
@@ -84,28 +86,8 @@ public class AuthController : ControllerBase
         throw new Exception("Passwords do not match.");
     }
 
-    /// <summary>
-    /// Insert a new user into the Users database table
-    /// </summary>
-    /// <param name="user">The user which will be inserted into the table.</param>
-    private static string CreateUser(UserForRegistrationDto user)
-    {
-        return $@"
-                    INSERT INTO TutorialAppSchema.Users(
-                    [FirstName],
-                    [LastName],
-                    [Email],
-                    [Gender],
-                    [Active]
-                    ) VALUES (
-                        '{user.FirstName}',
-                        '{user.LastName}',
-                        '{user.Email}',
-                        '{user.Gender}',
-                        1
-                    )";
-    }
 
+    [AllowAnonymous] // Allowed to receive an anonymous request, does not require a token
     [HttpPost("Login")]
     public IActionResult Login(UserForLoginDto user)
     {
@@ -138,6 +120,26 @@ public class AuthController : ControllerBase
         });
     }
 
+    /// <summary>
+    /// Grabs the first user id from the Claims 
+    /// Sql query to get the real numerical value and create a new token using that value
+    /// </summary>
+    /// <returns>A dictionary of one element containing the key of token with the user's ID as the value</returns>
+    [HttpGet("RefreshToken")]
+    public IActionResult RefreshToken()
+    {
+        string? userIdString = User.FindFirst("userId")?.Value;
+
+        string userIdQuery = $@"SELECT UserId FROM TutorialAppSchema.Users
+        WHERE UserId = '{userIdString}'";
+
+        int userIdNum = _dapper.GetSingleRow<int>(userIdQuery);
+
+        return Ok(new Dictionary<string, string> {
+            {"token", CreateToken(userIdNum)}
+        });
+    }
+
 
     #endregion
 
@@ -151,7 +153,7 @@ public class AuthController : ControllerBase
     /// <param name="passwordHash">The byte array representing the password hash.</param>
     /// <returns>A list of SqlParameter objects containing the password salt and hash.</returns>
 
-    private static List<SqlParameter> CreateSqlParameters(byte[] passwordSalt, byte[] passwordHash)
+    private List<SqlParameter> CreateSqlParameters(byte[] passwordSalt, byte[] passwordHash)
     {
         List<SqlParameter> sqlParameters = new List<SqlParameter>();
 
@@ -221,6 +223,28 @@ public class AuthController : ControllerBase
         SecurityToken token = tokenHandler.CreateToken(descriptor);
 
         return tokenHandler.WriteToken(token);
+    }
+
+    /// <summary>
+    /// Insert a new user into the Users database table
+    /// </summary>
+    /// <param name="user">The user which will be inserted into the table.</param>
+    private static string CreateUser(UserForRegistrationDto user)
+    {
+        return $@"
+                    INSERT INTO TutorialAppSchema.Users(
+                    [FirstName],
+                    [LastName],
+                    [Email],
+                    [Gender],
+                    [Active]
+                    ) VALUES (
+                        '{user.FirstName}',
+                        '{user.LastName}',
+                        '{user.Email}',
+                        '{user.Gender}',
+                        1
+                    )";
     }
 
     #endregion
