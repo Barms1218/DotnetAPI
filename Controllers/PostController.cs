@@ -1,6 +1,7 @@
 namespace DotNetAPI.Controllers;
 
 using DotNetAPI.Data;
+using DotNetAPI.Dtos;
 using DotNetAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -57,5 +58,62 @@ public class PostController : ControllerBase
     {
         string? userId = this.User.FindFirst("userId")?.Value; // this keyword specifies the request is coming from PostController, not ControllerBase
         return _dapper.GetRows<Post>($"SELECT * FROM TutorialAppSchema.Posts WHERE UserId = {userId}");
+    }
+
+    [HttpPost("Post")]
+    public IActionResult AddPost(AddPostDto post)
+    {
+        string addPostQuery = $@"INSERT INTO TutorialAppSchema.Posts (
+        [UserId],
+        [PostTitle],
+        [PostContent],
+        [PostCreated],
+        [LastUpdated]) VALUES (
+        {this.User.FindFirst("userId")?.Value},
+        '{post.PostTitle}',
+        '{post.PostContent}',
+        GETDATE(), GETDATE())";
+
+        Console.WriteLine(addPostQuery);
+
+        if (!_dapper.ExecuteSql(addPostQuery))
+        {
+            throw new Exception("Could not create new post.");
+        }
+
+        return Created();
+    }
+
+
+    [HttpPut("Post")]
+    public IActionResult EditPost(EditPostDto post)
+    {
+        string editPostQuery = $@"UPDATE TutorialAppSchema.Posts 
+        SET PostTitle = '{post.PostTitle}', 
+        PostContent = '{post.PostContent}',
+        LastUpdated = GETDATE()
+        WHERE PostId = {post.PostId} AND UserId = {this.User.FindFirst("userId")?.Value}";
+
+        Console.WriteLine(editPostQuery);
+
+        if (!_dapper.ExecuteSql(editPostQuery))
+        {
+            throw new Exception("Could not edit post.");
+        }
+
+        return Created();
+    }
+
+    [HttpDelete("Post/{postId}")]
+    public IActionResult DeletePost(int postId)
+    {
+        string deleteQuery = $@"DELETE FROM TutorialAppSchema.Posts WHERE PostId = {postId}";
+
+        if (_dapper.ExecuteSql(deleteQuery))
+        {
+            throw new Exception("Could not delete post");
+        }
+
+        return Ok();
     }
 }
