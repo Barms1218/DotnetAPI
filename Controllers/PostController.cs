@@ -81,7 +81,7 @@ public class PostController : ControllerBase
             throw new Exception("Could not create new post.");
         }
 
-        return Created();
+        return Ok();
     }
 
 
@@ -101,15 +101,22 @@ public class PostController : ControllerBase
             throw new Exception("Could not edit post.");
         }
 
-        return Created();
+        return Ok();
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="postId"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
     [HttpDelete("Post/{postId}")]
     public IActionResult DeletePost(int postId)
     {
-        string deleteQuery = $@"DELETE FROM TutorialAppSchema.Posts WHERE PostId = {postId}";
+        string deleteQuery = $@"DELETE FROM TutorialAppSchema.Posts 
+        WHERE PostId = {postId} AND UserId = {this.User.FindFirst("userId")?.Value}";
 
-        if (_dapper.ExecuteSql(deleteQuery))
+        if (!_dapper.ExecuteSql(deleteQuery))
         {
             throw new Exception("Could not delete post");
         }
