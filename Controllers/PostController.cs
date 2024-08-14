@@ -57,7 +57,19 @@ public class PostController : ControllerBase
     public IEnumerable<Post> GetMyPosts()
     {
         string? userId = this.User.FindFirst("userId")?.Value; // this keyword specifies the request is coming from PostController, not ControllerBase
-        return _dapper.GetRows<Post>($"SELECT * FROM TutorialAppSchema.Posts WHERE UserId = {userId}");
+        return _dapper.GetRows<Post>($"SELECT * FROM TutorialAppSchema.Posts WHERE UserId = {this.User.FindFirst("userId")?.Value}");
+    }
+
+    /// <summary>
+    /// Get all the posts with a title or content containing the parameter
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet("SearchByPost/{searchParam}")]
+    public IEnumerable<Post> GetByPost(string searchParam)
+    {
+        string? searchByPostQuery = $@"SELECT * FROM TutorialAppSchema.Posts 
+        WHERE PostTitle LIKE '%{searchParam}%' OR PostContent LIKE '%{searchParam}%'";
+        return _dapper.GetRows<Post>(searchByPostQuery);
     }
 
     [HttpPost("Post")]
