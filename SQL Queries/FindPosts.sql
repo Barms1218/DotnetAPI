@@ -1,21 +1,20 @@
 CREATE OR ALTER PROCEDURE TutorialAppSchema.spGet_Posts
-/* EXEC TutorialAppSchema.spGet_Posts */
     @UserId INT = NULL,
-    @SearchValue NVARCHAR(MAX) = NULL,
-    @PostId INT = NULL
+    @PostId INT = NULL,
+    @SearchParam NVARCHAR(MAX) = NULL
 AS
 BEGIN
-    SELECT [POSTS].[PostId],
-    [POSTS].[UserId],
-    [POSTS].[PostTitle],
-    [POSTS].[PostContent],
-    [POSTS].[PostCreated],
-    [POSTS].[LastUpdated] FROM TutorialAppSchema.Posts AS Posts
-        WHERE UserId = ISNULL(@UserId, Posts.UserId)
-            AND PostId = ISNULL(@PostId, Posts.PostId)
-            AND (@SearchValue IS NULL
-            OR Posts.PostContent LIKE '%' + @SearchValue + '%'
-            OR Posts.PostTitle LIKE '%' + @SearchValue + '%')
+    SELECT Posts.PostId,
+    Posts.UserId,
+    Posts.PostTitle,
+    Posts.PostContent,
+    Posts.PostCreated,
+    Posts.LastUpdated
+        FROM TutorialAppSchema.Posts AS Posts
+            WHERE Posts.UserId = ISNULL(@UserId, Posts.UserId)
+            AND Posts.PostId = ISNULL(@PostId, Posts.PostId)
+            AND (@SearchParam IS NULL
+            OR Posts.PostContent LIKE '%' + @SearchParam + '%"'
+            OR Posts.PostTitle LIKE '%' + @SearchParam + '%')
 END
-
-EXEC TutorialAppSchema.spGet_Posts @PostId = 9
+GO

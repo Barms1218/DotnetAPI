@@ -6,7 +6,7 @@ using DotNetAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-[Authorize]
+//[Authorize]
 [ApiController]
 [Route("[controller]")] // Creates the Post route for requests
 public class PostController : ControllerBase
@@ -21,32 +21,36 @@ public class PostController : ControllerBase
     /// Get all posts in the database
     /// </summary>
     /// <returns>All posts in the database</returns>
-    [HttpGet("Posts")]
-    public IEnumerable<Post> GetPosts()
+    [HttpGet("Posts/{postId}/{userId}/{searchParam}")]
+    public IEnumerable<Post> GetPosts(int postId = 0, int userId = 0, string searchParam = "None")
     {
-        return _dapper.GetRows<Post>("SELECT * FROM TutorialAppSchema.Posts");
-    }
+        string getQuery = "EXEC TutorialAppSchema.spGet_Posts";
+        string parameters = "";
 
-    /// <summary>
-    /// Get a single post
-    /// </summary>
-    /// <param name="postId"></param>
-    /// <returns></returns>
-    [HttpGet("SinglePost/{postId}")]
-    public Post GetSinglePost(int postId)
-    {
-        return _dapper.GetSingleRow<Post>($"SELECT * FROM TutorialAppSchema.Posts WHERE PostId = {postId}");
-    }
+        if (postId > 0)
+        {
+            parameters += $", @PostId = '{postId}'";
+        }
 
-    /// <summary>
-    /// Get all posts made by a specific user
-    /// </summary>
-    /// <param name="userId"></param>
-    /// <returns></returns>
-    [HttpGet("PostsByUser/{userId}")]
-    public IEnumerable<Post> GetPostsByUser(int userId)
-    {
-        return _dapper.GetRows<Post>($"SELECT * FROM TutorialAppSchema.Posts WHERE UserId = {userId}");
+        if (userId > 0)
+        {
+            parameters += $", @UserId = '{userId}'";
+        }
+
+        if (searchParam.Equals("None") == false)
+        {
+            parameters += $", @SearchParam = '{searchParam}'";
+        }
+
+        if (parameters.Length > 0)
+        {
+            getQuery += parameters.Substring(1);
+        }
+
+        IEnumerable<Post> posts = _dapper.GetRows<Post>(getQuery);
+
+
+        return posts;
     }
 
     /// <summary>
@@ -59,19 +63,6 @@ public class PostController : ControllerBase
         string? userId = this.User.FindFirst("userId")?.Value; // this keyword specifies the request is coming from PostController, not ControllerBase
         return _dapper.GetRows<Post>($"SELECT * FROM TutorialAppSchema.Posts WHERE UserId = {this.User.FindFirst("userId")?.Value}");
     }
-
-    /// <summary>
-    /// Get all the posts with a title or content containing the parameter
-    /// </summary>
-    /// <returns></returns>
-    [HttpGet("SearchByPost/{searchParam}")]
-    public IEnumerable<Post> GetByPost(string searchParam)
-    {
-        string? searchByPostQuery = $@"SELECT * FROM TutorialAppSchema.Posts 
-        WHERE PostTitle LIKE '%{searchParam}%' OR PostContent LIKE '%{searchParam}%'";
-        return _dapper.GetRows<Post>(searchByPostQuery);
-    }
-
     [HttpPost("Post")]
     public IActionResult AddPost(AddPostDto post)
     {
@@ -100,13 +91,12 @@ public class PostController : ControllerBase
     [HttpPut("Post")]
     public IActionResult EditPost(EditPostDto post)
     {
-        string editPostQuery = $@"UPDATE TutorialAppSchema.Posts 
-        SET PostTitle = '{post.PostTitle}', 
-        PostContent = '{post.PostContent}',
-        LastUpdated = GETDATE()
-        WHERE PostId = {post.PostId} AND UserId = {this.User.FindFirst("userId")?.Value}";
-
-        Console.WriteLine(editPostQuery);
+        string editPostQuery = $@"EXEC TutorialAppSchema.spUpsert_Posts
+        @PostTitle = '{post.PostTitle}', 
+        @PostContent = '{post.PostContent}',
+        @LastUpdated = GETDATE()
+        @PostId = {post.PostId} 
+            WHERE UserId = {this.User.FindFirst("userId")?.Value}";
 
         if (!_dapper.ExecuteSql(editPostQuery))
         {
