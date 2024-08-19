@@ -1,4 +1,4 @@
-ALTER PROCEDURE TutorialAppSchema.spGet_Users
+CREATE OR ALTER PROCEDURE TutorialAppSchema.spGet_Users
 /*EXEC TutorialAppSchema.spGet_User @UserId=3, @RunFilter=1 s*/
     @UserId INT = NULL,
     @Active BIT = NULL
