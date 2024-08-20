@@ -22,28 +22,6 @@ public class AuthHelper
     }
 
     /// <summary>
-    /// Creates a list of SQL parameters for a password salt and password hash.
-    /// </summary>
-    /// <param name="passwordSalt">The byte array representing the password salt.</param>
-    /// <param name="passwordHash">The byte array representing the password hash.</param>
-    /// <returns>A list of SqlParameter objects containing the password salt and hash.</returns>
-
-    public List<SqlParameter> CreateSqlParameters(byte[] passwordSalt, byte[] passwordHash)
-    {
-        List<SqlParameter> sqlParameters = new List<SqlParameter>();
-
-        SqlParameter passwordSaltParameter = new SqlParameter("@PasswordSalt", SqlDbType.VarBinary);
-        passwordSaltParameter.Value = passwordSalt;
-
-        SqlParameter passwordHashParameter = new SqlParameter("@PasswordHash", SqlDbType.VarBinary);
-        passwordHashParameter.Value = passwordHash;
-
-        sqlParameters.Add(passwordSaltParameter);
-        sqlParameters.Add(passwordHashParameter);
-        return sqlParameters;
-    }
-
-    /// <summary>
     /// Generates a password hash using the provided user password and password salt.
     /// Combines a configured password key with the salt to derive the final hash using PBKDF2.
     /// </summary>
@@ -98,27 +76,5 @@ public class AuthHelper
         SecurityToken token = tokenHandler.CreateToken(descriptor);
 
         return tokenHandler.WriteToken(token);
-    }
-
-    /// <summary>
-    /// Insert a new user into the Users database table
-    /// </summary>
-    /// <param name="user">The user which will be inserted into the table.</param>
-    public string CreateUser(UserRegistrationDto user)
-    {
-        return $@"
-                    INSERT INTO TutorialAppSchema.Users(
-                    [FirstName],
-                    [LastName],
-                    [Email],
-                    [Gender],
-                    [Active]
-                    ) VALUES (
-                        '{user.FirstName}',
-                        '{user.LastName}',
-                        '{user.Email}',
-                        '{user.Gender}',
-                        1
-                    )";
     }
 }

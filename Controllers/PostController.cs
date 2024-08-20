@@ -6,7 +6,7 @@ using DotNetAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-//[Authorize]
+[Authorize]
 [ApiController]
 [Route("[controller]")] // Creates the Post route for requests
 public class PostController : ControllerBase
@@ -37,7 +37,7 @@ public class PostController : ControllerBase
             parameters += $", @UserId = '{userId}'";
         }
 
-        if (searchParam.Equals("None") == false)
+        if (searchParam.ToLower().Equals("none") == false)
         {
             parameters += $", @SearchParam = '{searchParam}'";
         }
@@ -61,46 +61,29 @@ public class PostController : ControllerBase
     public IEnumerable<Post> GetMyPosts()
     {
         string? userId = this.User.FindFirst("userId")?.Value; // this keyword specifies the request is coming from PostController, not ControllerBase
-        return _dapper.GetRows<Post>($"SELECT * FROM TutorialAppSchema.Posts WHERE UserId = {this.User.FindFirst("userId")?.Value}");
+        Console.Write(userId);
+        return _dapper.GetRows<Post>($@"EXEC TutorialAppSchema.spGet_Posts
+            @UserId = {this.User.FindFirst("userId")?.Value}");
     }
-    [HttpPost("Post")]
-    public IActionResult AddPost(AddPostDto post)
+
+    [HttpPut("UpsertPost")]
+    public IActionResult UpsertPost(Post post)
     {
-        string addPostQuery = $@"INSERT INTO TutorialAppSchema.Posts (
-        [UserId],
-        [PostTitle],
-        [PostContent],
-        [PostCreated],
-        [LastUpdated]) VALUES (
-        {this.User.FindFirst("userId")?.Value},
-        '{post.PostTitle}',
-        '{post.PostContent}',
-        GETDATE(), GETDATE())";
+        string addPostQuery = $@"EXEC TutorialAppSchema.spUpsert_Posts
+        @UserId = {this.User.FindFirst("userId")?.Value},
+        @PostTitle = '{post.PostTitle}',
+        @PostContent = '{post.PostContent}'";
+
+        if (post.PostId > 0)
+        {
+            addPostQuery += $", @PostId = {post.PostId}";
+        }
 
         Console.WriteLine(addPostQuery);
 
         if (!_dapper.ExecuteSql(addPostQuery))
         {
-            throw new Exception("Could not create new post.");
-        }
-
-        return Ok();
-    }
-
-
-    [HttpPut("Post")]
-    public IActionResult EditPost(EditPostDto post)
-    {
-        string editPostQuery = $@"EXEC TutorialAppSchema.spUpsert_Posts
-        @PostTitle = '{post.PostTitle}', 
-        @PostContent = '{post.PostContent}',
-        @LastUpdated = GETDATE()
-        @PostId = {post.PostId} 
-            WHERE UserId = {this.User.FindFirst("userId")?.Value}";
-
-        if (!_dapper.ExecuteSql(editPostQuery))
-        {
-            throw new Exception("Could not edit post.");
+            throw new Exception("Could not upsert post.");
         }
 
         return Ok();
@@ -115,8 +98,9 @@ public class PostController : ControllerBase
     [HttpDelete("Post/{postId}")]
     public IActionResult DeletePost(int postId)
     {
-        string deleteQuery = $@"DELETE FROM TutorialAppSchema.Posts 
-        WHERE PostId = {postId} AND UserId = {this.User.FindFirst("userId")?.Value}";
+        string deleteQuery = $@"EXEC TutorialAppSchema.spDelete_Post
+        @PostId = {postId},
+        @UserId = {this.User.FindFirst("userId")?.Value}";
 
         if (!_dapper.ExecuteSql(deleteQuery))
         {
