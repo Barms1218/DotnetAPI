@@ -23,7 +23,7 @@ class DataContextDapper
     /// <typeparam name="T"></typeparam>
     /// <param name="sql"></param>
     /// <returns></returns>
-    public IEnumerable<T> GetRows<T>(string sql)
+    public IEnumerable<T> LoadData<T>(string sql)
     {
         IDbConnection dbConnection = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
 
@@ -36,7 +36,7 @@ class DataContextDapper
     /// <typeparam name="T"></typeparam>
     /// <param name="sql"></param>
     /// <returns></returns>
-    public T GetSingleRow<T>(string sql)
+    public T LoadDataSingle<T>(string sql)
     {
         IDbConnection dbConnection = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
 
@@ -93,6 +93,37 @@ class DataContextDapper
         dbConnection.Close();
 
         return rowsAffected > 0;
+    }
+
+
+    /// <summary>
+    /// Method that abstracts a Query operation and returns all rows
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="sql"></param>
+    /// <returns></returns>
+    public IEnumerable<T> LoadDataWithParameters<T>(string sql, DynamicParameters sqlParameters)
+    {
+        IDbConnection dbConnection = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
+
+        return dbConnection.Query<T>(sql, sqlParameters);
+    }
+
+    /// <summary>
+    /// Method that abstracts the query operation and runs a single row query
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="sql"></param>
+    /// <returns></returns>
+    public T LoadDataSingleWithParameters<T>(string sql, DynamicParameters sqlParameters)
+    {
+        IDbConnection dbConnection = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
+
+        Console.WriteLine(sql);
+
+        Console.WriteLine(sqlParameters);
+
+        return dbConnection.QuerySingle<T>(sql, sqlParameters);
     }
 }
 

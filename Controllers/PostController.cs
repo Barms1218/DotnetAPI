@@ -47,7 +47,7 @@ public class PostController : ControllerBase
             getQuery += parameters.Substring(1);
         }
 
-        IEnumerable<Post> posts = _dapper.GetRows<Post>(getQuery);
+        IEnumerable<Post> posts = _dapper.LoadData<Post>(getQuery);
 
 
         return posts;
@@ -62,7 +62,7 @@ public class PostController : ControllerBase
     {
         string? userId = this.User.FindFirst("userId")?.Value; // this keyword specifies the request is coming from PostController, not ControllerBase
         Console.Write(userId);
-        return _dapper.GetRows<Post>($@"EXEC TutorialAppSchema.spGet_Posts
+        return _dapper.LoadData<Post>($@"EXEC TutorialAppSchema.spGet_Posts
             @UserId = {this.User.FindFirst("userId")?.Value}");
     }
 

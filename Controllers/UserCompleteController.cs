@@ -27,7 +27,7 @@ public class UserCompleteController : ControllerBase
     [HttpGet("TestConnection")]
     public DateTime TestConnection()
     {
-        return _dapper.GetSingleRow<DateTime>("SELECT GETDATE()");
+        return _dapper.LoadDataSingle<DateTime>("SELECT GETDATE()");
     }
 
     /// <summary>
@@ -55,7 +55,7 @@ public class UserCompleteController : ControllerBase
 
         Console.WriteLine(getQuery);
 
-        IEnumerable<UserComplete> users = _dapper.GetRows<UserComplete>(getQuery);
+        IEnumerable<UserComplete> users = _dapper.LoadData<UserComplete>(getQuery);
 
         return users;
     }
