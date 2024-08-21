@@ -63,7 +63,7 @@ public class AuthController : ControllerBase
                 string addAuthQuery = $@"EXEC TutorialAppSchema.spUpsert_Registration
                 @Email = @EmailParam,
                 @Passwordhash = @PasswordHashParam,
-                @PasswordSalt = @PasswordSaltParam)";
+                @PasswordSalt = @PasswordSaltParam";
 
                 List<SqlParameter> sqlParameters = new List<SqlParameter>();
 
