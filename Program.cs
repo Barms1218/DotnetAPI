@@ -1,6 +1,5 @@
 using System.Text;
 using DotNetAPI.Data;
-using DotNetAPI.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
@@ -30,8 +29,6 @@ builder.Services.AddCors((options) =>
             .AllowCredentials();
     });
 });
-
-builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 // Need to make sure token key is the same as the one used to make the token
 // Accesses the key from the appsettings file without accessing AuthController
