@@ -1,5 +1,7 @@
 namespace DotNetAPI.Controllers;
 
+using System.Data;
+using Dapper;
 using DotNetAPI.Data;
 using DotNetAPI.Dtos;
 using DotNetAPI.Models;
@@ -12,6 +14,8 @@ using Microsoft.AspNetCore.Mvc;
 public class PostController : ControllerBase
 {
     private readonly DataContextDapper _dapper;
+
+    private dynamic _dynamicParams;
     public PostController(IConfiguration config)
     {
         _dapper = new DataContextDapper(config);
@@ -71,8 +75,13 @@ public class PostController : ControllerBase
     {
         string addPostQuery = $@"EXEC TutorialAppSchema.spUpsert_Posts
         @UserId = {this.User.FindFirst("userId")?.Value},
-        @PostTitle = '{post.PostTitle}',
-        @PostContent = '{post.PostContent}'";
+        @PostTitle = @PostTitleParam,
+        @PostContent = @PostContentParam";
+
+        _dynamicParams = new DynamicParameters();
+
+        _dynamicParams.Add("@PostTitleParam", post.PostTitle, DbType.String);
+        _dynamicParams.Add("@PostContentParam", post.PostContent, DbType.String);
 
         if (post.PostId > 0)
         {
@@ -99,10 +108,14 @@ public class PostController : ControllerBase
     public IActionResult DeletePost(int postId)
     {
         string deleteQuery = $@"EXEC TutorialAppSchema.spDelete_Post
-        @PostId = {postId},
+        @PostId = @PostIdParam,
         @UserId = {this.User.FindFirst("userId")?.Value}";
 
-        if (!_dapper.ExecuteSql(deleteQuery))
+        _dynamicParams = new DynamicParameters();
+
+        _dynamicParams.Add("@PostIdParam", postId, DbType.String);
+
+        if (!_dapper.ExecuteSqlWithParameters(deleteQuery, _dynamicParams))
         {
             throw new Exception("Could not delete post");
         }

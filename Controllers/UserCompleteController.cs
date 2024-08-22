@@ -1,4 +1,5 @@
 using System.Net;
+using Dapper;
 using DotNetAPI.Data;
 using DotNetAPI.Dtos;
 using DotNetAPI.Models;
@@ -11,6 +12,9 @@ namespace DotNetAPI.Controllers;
 public class UserCompleteController : ControllerBase
 {
     DataContextDapper _dapper;
+
+    private DynamicParameters _dynamicParams;
+
     /// <summary>
     /// Constructor that reads the 
     /// </summary>

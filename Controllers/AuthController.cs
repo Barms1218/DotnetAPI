@@ -45,7 +45,10 @@ public class AuthController : ControllerBase
         if (user.Password == user.PassWordConfirm)
         {
             string query = $@"EXEC TutorialAppSchema.spVerify_User 
-            @Email = '{user.Email}'";
+            @Email = @EmailParam";
+
+            DynamicParameters dynamicParameters = new DynamicParameters();
+            dynamicParameters.Add("@EmailParam", user.Email, DbType.String);
 
             Console.Write(query);
 
@@ -69,11 +72,10 @@ public class AuthController : ControllerBase
                                                 @JobTitle = @JobTitleParam,
                                                 @Salary = @SalaryParam";
 
-                    DynamicParameters dynamicParameters = new DynamicParameters();
+
 
                     dynamicParameters.Add("@FirstNameParam", user.FirstName, DbType.String);
                     dynamicParameters.Add("@LastNameParam", user.LastName, DbType.String);
-                    dynamicParameters.Add("@EmailParam", user.Email, DbType.String);
                     dynamicParameters.Add("@GenderParam", user.Gender, DbType.String);
                     dynamicParameters.Add("@ActiveParam", 1, DbType.Boolean);
                     dynamicParameters.Add("@DepartmentParam", user.Department, DbType.String);

@@ -73,26 +73,10 @@ class DataContextDapper
     /// <param name="query"></param>
     /// <param name="parameters"></param>
     /// <returns></returns>
-    public bool ExecuteSqlWithParameters(string query, List<SqlParameter> parameters)
+    public bool ExecuteSqlWithParameters(string query, DynamicParameters dynamicParameters)
     {
         IDbConnection dbConnection = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
-
-        SqlCommand commandWithParams = new SqlCommand(query);
-
-        foreach (SqlParameter param in parameters)
-        {
-            commandWithParams.Parameters.Add(param);
-        }
-
-        dbConnection.Open();
-
-        commandWithParams.Connection = (SqlConnection)dbConnection;
-
-        int rowsAffected = commandWithParams.ExecuteNonQuery(); // Get the number of rows affected
-
-        dbConnection.Close();
-
-        return rowsAffected > 0;
+        return dbConnection.Execute(query, dynamicParameters) > 0;
     }
 
 
