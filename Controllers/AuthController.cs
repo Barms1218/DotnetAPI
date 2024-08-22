@@ -44,15 +44,14 @@ public class AuthController : ControllerBase
     {
         if (user.Password == user.PassWordConfirm)
         {
-            string query = $@"EXEC TutorialAppSchema.spVerify_User 
-            @Email = @EmailParam";
+            string query = $@"EXEC TutorialAppSchema.spVerify_User @Email = @EmailParam";
 
             DynamicParameters dynamicParameters = new DynamicParameters();
             dynamicParameters.Add("@EmailParam", user.Email, DbType.String);
 
             Console.Write(query);
 
-            IEnumerable<string> existingUsers = _dapper.LoadData<string>(query);
+            IEnumerable<string> existingUsers = _dapper.LoadDataWithParameters<string>(query, dynamicParameters);
             if (existingUsers.Count() == 0)
             {
                 UserLoginDto userSettingPassword = new UserLoginDto()
@@ -82,7 +81,7 @@ public class AuthController : ControllerBase
                     dynamicParameters.Add("@JobTitleParam", user.JobTitle, DbType.String);
                     dynamicParameters.Add("@SalaryParam", user.Salary, DbType.Decimal);
 
-                    if (_dapper.ExecuteSql(createUserQuery))
+                    if (_dapper.ExecuteSqlWithParameters(createUserQuery, dynamicParameters))
                     {
                         return Ok();
                     }
@@ -163,7 +162,7 @@ public class AuthController : ControllerBase
         DynamicParameters dynamicParameters = new DynamicParameters();
         dynamicParameters.Add("@UserIdParam", userIdString, DbType.String);
 
-        int userIdNum = _dapper.LoadDataSingle<int>(userIdQuery);
+        int userIdNum = _dapper.LoadDataSingleWithParameters<int>(userIdQuery, dynamicParameters);
 
         return Ok(new Dictionary<string, string> {
             {"token", _authHelper.CreateToken(userIdNum)}
