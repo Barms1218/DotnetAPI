@@ -5,10 +5,12 @@ using DotNetAPI.Data;
 using DotNetAPI.Dtos;
 using DotNetAPI.Helpers;
 using DotNetAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DotNetAPI.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("[controller]")]
 public class UserController : ControllerBase

@@ -71,6 +71,7 @@ public class AuthController : ControllerBase
                 if (_authHelper.SetPassword(userSettingPassword))
                 {
                     User completeUser = _mapper.Map<User>(userSettingPassword);
+                    completeUser.Active = true;
 
                     if (_sqlHelper.UpsertUser(completeUser))
                     {
