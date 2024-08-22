@@ -29,6 +29,7 @@ public class PostController : ControllerBase
     {
         string getQuery = "EXEC TutorialAppSchema.spGet_Posts";
         string parameters = "";
+
         DynamicParameters dynamicParams = new DynamicParameters();
 
         if (postId > 0)
@@ -72,6 +73,7 @@ public class PostController : ControllerBase
 
         DynamicParameters dynamicParams = new DynamicParameters();
         dynamicParams.Add("@UserIdParam", userId, DbType.String);
+
         return _dapper.LoadDataWithParameters<Post>(myPostsQuery, dynamicParams);
     }
 
@@ -79,7 +81,7 @@ public class PostController : ControllerBase
     public IActionResult UpsertPost(Post post)
     {
         string addPostQuery = $@"EXEC TutorialAppSchema.spUpsert_Posts
-        @UserId = {this.User.FindFirst("userId")?.Value},
+        @UserId = @UserIdParam,
         @PostTitle = @PostTitleParam,
         @PostContent = @PostContentParam";
 
@@ -87,10 +89,12 @@ public class PostController : ControllerBase
 
         dynamicParams.Add("@PostTitleParam", post.PostTitle, DbType.String);
         dynamicParams.Add("@PostContentParam", post.PostContent, DbType.String);
+        dynamicParams.Add("@UserIdParam", this.User.FindFirst("userId")?.Value, DbType.String);
 
         if (post.PostId > 0)
         {
-            addPostQuery += $", @PostId = {post.PostId}";
+            addPostQuery += $", @PostId = @PostIdParam";
+            dynamicParams.Add("@PostIdParam", post.PostId, DbType.Int32);
         }
 
         Console.WriteLine(addPostQuery);
@@ -112,13 +116,14 @@ public class PostController : ControllerBase
     [HttpDelete("Post/{postId}")]
     public IActionResult DeletePost(int postId)
     {
-        string deleteQuery = $@"EXEC TutorialAppSchema.spDelete_Post
+        string deleteQuery = @"EXEC TutorialAppSchema.spDelete_Post
         @PostId = @PostIdParam,
-        @UserId = {this.User.FindFirst("userId")?.Value}";
+        @UserId = @UserIdParam";
 
         DynamicParameters dynamicParams = new DynamicParameters();
 
         dynamicParams.Add("@PostIdParam", postId, DbType.String);
+        dynamicParams.Add("@UserIdParam", this.User.FindFirst("userId")?.Value, DbType.String);
 
         if (!_dapper.ExecuteSqlWithParameters(deleteQuery, dynamicParams))
         {

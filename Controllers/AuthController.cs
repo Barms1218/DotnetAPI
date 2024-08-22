@@ -2,10 +2,12 @@ namespace DotNetAPI.Controllers;
 
 using System.Data;
 using System.Security.Cryptography;
+using AutoMapper;
 using Dapper;
 using DotNetAPI.Data;
 using DotNetAPI.Dtos;
 using DotNetAPI.Helpers;
+using DotNetAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
@@ -18,13 +20,22 @@ public class AuthController : ControllerBase
     private readonly IConfiguration _config;
     private readonly DataContextDapper _dapper;
 
+    private readonly SqlHelper _sqlHelper;
+
     private readonly AuthHelper _authHelper;
+
+    private readonly IMapper _mapper;
 
     public AuthController(IConfiguration config)
     {
         _config = config;
         _dapper = new DataContextDapper(config);
         _authHelper = new AuthHelper(config);
+        _sqlHelper = new SqlHelper(config);
+        _mapper = new Mapper(new MapperConfiguration(cfg =>
+        {
+            cfg.CreateMap<UserRegistrationDto, User>();
+        }));
     }
 
 
@@ -44,14 +55,12 @@ public class AuthController : ControllerBase
     {
         if (user.Password == user.PassWordConfirm)
         {
-            string query = $@"EXEC TutorialAppSchema.spVerify_User @Email = @EmailParam";
+            string query = "EXEC TutorialAppSchema.spVerify_User @Email = @EmailParam";
 
-            DynamicParameters dynamicParameters = new DynamicParameters();
-            dynamicParameters.Add("@EmailParam", user.Email, DbType.String);
+            DynamicParameters emailParams = new DynamicParameters();
+            emailParams.Add("@EmailParam", user.Email, DbType.String);
 
-            Console.Write(query);
-
-            IEnumerable<string> existingUsers = _dapper.LoadDataWithParameters<string>(query, dynamicParameters);
+            IEnumerable<string> existingUsers = _dapper.LoadDataWithParameters<string>(query, emailParams);
             if (existingUsers.Count() == 0)
             {
                 UserLoginDto userSettingPassword = new UserLoginDto()
@@ -61,27 +70,9 @@ public class AuthController : ControllerBase
                 };
                 if (_authHelper.SetPassword(userSettingPassword))
                 {
-                    string createUserQuery = $@" EXEC TutorialAppSchema.spUpsert_User
-                                                @Firstname = @FirstNameParam,
-                                                @LastName = @LastNameParam,
-                                                @Email = @EmailParam,
-                                                @Gender = @GenderParam,
-                                                @Active = @ActiveParam,
-                                                @Department = @DepartmentParam,
-                                                @JobTitle = @JobTitleParam,
-                                                @Salary = @SalaryParam";
+                    User completeUser = _mapper.Map<User>(userSettingPassword);
 
-
-
-                    dynamicParameters.Add("@FirstNameParam", user.FirstName, DbType.String);
-                    dynamicParameters.Add("@LastNameParam", user.LastName, DbType.String);
-                    dynamicParameters.Add("@GenderParam", user.Gender, DbType.String);
-                    dynamicParameters.Add("@ActiveParam", 1, DbType.Boolean);
-                    dynamicParameters.Add("@DepartmentParam", user.Department, DbType.String);
-                    dynamicParameters.Add("@JobTitleParam", user.JobTitle, DbType.String);
-                    dynamicParameters.Add("@SalaryParam", user.Salary, DbType.Decimal);
-
-                    if (_dapper.ExecuteSqlWithParameters(createUserQuery, dynamicParameters))
+                    if (_sqlHelper.UpsertUser(completeUser))
                     {
                         return Ok();
                     }

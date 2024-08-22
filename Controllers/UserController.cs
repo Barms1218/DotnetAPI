@@ -3,6 +3,7 @@ using System.Net;
 using Dapper;
 using DotNetAPI.Data;
 using DotNetAPI.Dtos;
+using DotNetAPI.Helpers;
 using DotNetAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,7 +14,7 @@ namespace DotNetAPI.Controllers;
 public class UserController : ControllerBase
 {
     private readonly DataContextDapper _dapper;
-
+    private readonly SqlHelper _sqlHelper;
 
     /// <summary>
     /// Constructor that reads the 
@@ -22,6 +23,7 @@ public class UserController : ControllerBase
     public UserController(IConfiguration configuration)
     {
         _dapper = new DataContextDapper(configuration);
+        _sqlHelper = new SqlHelper(configuration);
     }
 
     /// <summary>
@@ -39,8 +41,8 @@ public class UserController : ControllerBase
     /// </summary>
     /// <param name="userId">Default to 0, change for specific user</param>
     /// <returns></returns>
-    [HttpGet("GetUsers/{userId}/{Active}")]
-    public IEnumerable<User> GetUsers(int userId = 0, bool isActive = false)
+    [HttpGet("GetUsers/{userId}/{active}")]
+    public IEnumerable<User> GetUsers(int userId = 0, bool active = false)
     {
         string getQuery = "EXEC TutorialAppSchema.spGet_Users ";
         string parameters = "";
@@ -55,15 +57,16 @@ public class UserController : ControllerBase
             parameters += ", @UserId= @UserIdParam";
         }
 
-        if (isActive)
+        if (active)
         {
-            dynamicParams.Add("@ActiveParam", isActive, DbType.Boolean);
+            dynamicParams.Add("@ActiveParam", active, DbType.Boolean);
             parameters += ", @Active = @ActiveParam";
         }
 
-        getQuery += parameters.Substring(1);
-
-        Console.WriteLine(getQuery);
+        if (parameters.Length > 0)
+        {
+            getQuery += parameters.Substring(1);
+        }
 
         IEnumerable<User> users = _dapper.LoadDataWithParameters<User>(getQuery, dynamicParams);
 
@@ -79,31 +82,7 @@ public class UserController : ControllerBase
     [HttpPut("Upsert")]
     public IActionResult UpsertUser(User user)
     {
-        DynamicParameters dynamicParams = new DynamicParameters();
-
-        dynamicParams.Add("@FirstNameParam", user.FirstName, DbType.String);
-        dynamicParams.Add("@LastNameParam", user.LastName, DbType.String);
-        dynamicParams.Add("@EmailParam", user.Email, DbType.String);
-        dynamicParams.Add("@GenderParam", user.Gender, DbType.String);
-        dynamicParams.Add("@ActiveParam", user.Active, DbType.Boolean);
-        dynamicParams.Add("@DepartmentParam", user.Department, DbType.String);
-        dynamicParams.Add("@JobTitleParam", user.JobTitle, DbType.String);
-        dynamicParams.Add("@SalaryParam", user.Salary, DbType.Decimal);
-        dynamicParams.Add("@UserIdParam", user.UserId, DbType.Int32);
-
-        string query = @" EXEC TutorialAppSchema.spUpsert_User
-                @Firstname = @FirstNameParam,
-                @LastName = @LastNameParam,
-                @Email = @EmailParam,
-                @Gender = @GenderParam,
-                @Active = @ActiveParam,
-                @Department = @DepartmentParam,
-                @JobTitle = @JobTitleParam,
-                @Salary = @Salaryparam,
-                @UserId = @UserIdParam";
-
-        Console.Write(query);
-        if (_dapper.ExecuteSqlWithParameters(query, dynamicParams))
+        if (_sqlHelper.UpsertUser(user))
         {
             return Ok();
         }
