@@ -65,7 +65,7 @@ public class UserController : ControllerBase
 
         Console.WriteLine(getQuery);
 
-        IEnumerable<User> users = _dapper.LoadData<User>(getQuery);
+        IEnumerable<User> users = _dapper.LoadDataWithParameters<User>(getQuery, dynamicParams);
 
         return users;
     }
@@ -80,6 +80,7 @@ public class UserController : ControllerBase
     public IActionResult UpsertUser(User user)
     {
         DynamicParameters dynamicParams = new DynamicParameters();
+
         dynamicParams.Add("@FirstNameParam", user.FirstName, DbType.String);
         dynamicParams.Add("@LastNameParam", user.LastName, DbType.String);
         dynamicParams.Add("@EmailParam", user.Email, DbType.String);

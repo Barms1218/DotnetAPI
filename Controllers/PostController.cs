@@ -15,7 +15,6 @@ public class PostController : ControllerBase
 {
     private readonly DataContextDapper _dapper;
 
-    private dynamic _dynamicParams;
     public PostController(IConfiguration config)
     {
         _dapper = new DataContextDapper(config);
@@ -25,25 +24,29 @@ public class PostController : ControllerBase
     /// Get all posts in the database
     /// </summary>
     /// <returns>All posts in the database</returns>
-    [HttpGet("Posts/{postId}/{userId}/{searchParam}")]
-    public IEnumerable<Post> GetPosts(int postId = 0, int userId = 0, string searchParam = "None")
+    [HttpGet("Posts/{postId}/{userId}/{searchValue}")]
+    public IEnumerable<Post> GetPosts(int postId = 0, int userId = 0, string searchValue = "None")
     {
         string getQuery = "EXEC TutorialAppSchema.spGet_Posts";
         string parameters = "";
+        DynamicParameters dynamicParams = new DynamicParameters();
 
         if (postId > 0)
         {
-            parameters += $", @PostId = '{postId}'";
+            parameters += ", @PostId = @PostIdParam";
+            dynamicParams.Add("@PostIdParam", postId, DbType.Int32);
         }
 
         if (userId > 0)
         {
-            parameters += $", @UserId = '{userId}'";
+            parameters += ", @UserId = @UserIdParam";
+            dynamicParams.Add("@UserIdParam", userId, DbType.Int32);
         }
 
-        if (searchParam.ToLower().Equals("none") == false)
+        if (searchValue.ToLower().Equals("none") == false)
         {
-            parameters += $", @SearchParam = '{searchParam}'";
+            parameters += $", @SearchValue = @SearchParam";
+            dynamicParams.Add("SearchParam", postId, DbType.Int32);
         }
 
         if (parameters.Length > 0)
@@ -51,7 +54,7 @@ public class PostController : ControllerBase
             getQuery += parameters.Substring(1);
         }
 
-        IEnumerable<Post> posts = _dapper.LoadData<Post>(getQuery);
+        IEnumerable<Post> posts = _dapper.LoadDataWithParameters<Post>(getQuery, dynamicParams);
 
 
         return posts;
@@ -64,10 +67,12 @@ public class PostController : ControllerBase
     [HttpGet("MyPosts")]
     public IEnumerable<Post> GetMyPosts()
     {
+        string myPostsQuery = "EXEC TutorialAppSchema.spGet_Posts @UserId = @UserIdparam";
         string? userId = this.User.FindFirst("userId")?.Value; // this keyword specifies the request is coming from PostController, not ControllerBase
-        Console.Write(userId);
-        return _dapper.LoadData<Post>($@"EXEC TutorialAppSchema.spGet_Posts
-            @UserId = {this.User.FindFirst("userId")?.Value}");
+
+        DynamicParameters dynamicParams = new DynamicParameters();
+        dynamicParams.Add("@UserIdParam", userId, DbType.String);
+        return _dapper.LoadDataWithParameters<Post>(myPostsQuery, dynamicParams);
     }
 
     [HttpPut("UpsertPost")]
@@ -78,10 +83,10 @@ public class PostController : ControllerBase
         @PostTitle = @PostTitleParam,
         @PostContent = @PostContentParam";
 
-        _dynamicParams = new DynamicParameters();
+        DynamicParameters dynamicParams = new DynamicParameters();
 
-        _dynamicParams.Add("@PostTitleParam", post.PostTitle, DbType.String);
-        _dynamicParams.Add("@PostContentParam", post.PostContent, DbType.String);
+        dynamicParams.Add("@PostTitleParam", post.PostTitle, DbType.String);
+        dynamicParams.Add("@PostContentParam", post.PostContent, DbType.String);
 
         if (post.PostId > 0)
         {
@@ -90,7 +95,7 @@ public class PostController : ControllerBase
 
         Console.WriteLine(addPostQuery);
 
-        if (!_dapper.ExecuteSql(addPostQuery))
+        if (!_dapper.ExecuteSqlWithParameters(addPostQuery, dynamicParams))
         {
             throw new Exception("Could not upsert post.");
         }
@@ -111,11 +116,11 @@ public class PostController : ControllerBase
         @PostId = @PostIdParam,
         @UserId = {this.User.FindFirst("userId")?.Value}";
 
-        _dynamicParams = new DynamicParameters();
+        DynamicParameters dynamicParams = new DynamicParameters();
 
-        _dynamicParams.Add("@PostIdParam", postId, DbType.String);
+        dynamicParams.Add("@PostIdParam", postId, DbType.String);
 
-        if (!_dapper.ExecuteSqlWithParameters(deleteQuery, _dynamicParams))
+        if (!_dapper.ExecuteSqlWithParameters(deleteQuery, dynamicParams))
         {
             throw new Exception("Could not delete post");
         }
